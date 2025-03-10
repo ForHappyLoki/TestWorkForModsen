@@ -1,0 +1,6 @@
+services:
+  testworkformodsen:
+    image: ${DOCKER_REGISTRY-}testworkformodsen
+    build:
+      context: .
+      dockerfile: TestWorkForModsen\Dockerfile
