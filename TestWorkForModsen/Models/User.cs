@@ -1,14 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿    using System.ComponentModel.DataAnnotations;
 
-namespace TestWork_Events.Models
-{
-    public class User
+    namespace TestWork_Events.Models
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string Surname { get; set; }
-        public DateOnly Birthday { get; set; }
-        public string Email { get; set; }
-        public ICollection<ConnectorEventUser> ConnectorEventUser { get; set; } = new List<ConnectorEventUser>();
+        public class User
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+            public string Surname { get; set; }
+            public DateOnly Birthday { get; set; }
+            public string Email { get; set; }
+            public ICollection<ConnectorEventUser> ConnectorEventUser { get; set; } = new List<ConnectorEventUser>();
+        }
     }
-}

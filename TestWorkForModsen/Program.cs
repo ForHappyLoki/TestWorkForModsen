@@ -13,6 +13,8 @@ using TestWork_Events.Repository;
 using TestWork_Events.Tools;
 using Microsoft.OpenApi.Models;
 using TestWorkForModsen.Middleware;
+using TestWorkForModsen.Repository;
+using TestWorkForModsen.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,15 +22,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 
 builder.Services.AddDbContext<DatabaseContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IRepository<ConnectorEventUser>, ConnectorEventUserRepository>();
 builder.Services.AddScoped<IRepository<Account>, AccountRepository>();
 builder.Services.AddScoped<IRepository<Event>, EventRepository>();
 builder.Services.AddScoped<IRepository<User>, UserRepository>();
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddHttpClient("AccountApi", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7038"); 
+    client.BaseAddress = new Uri("https://localhost:8081"); 
     //Тут при продакшене нужно будет указать публичный адресс
 });
 builder.Services.AddAuthorization();
@@ -55,6 +59,12 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+// Применяем миграции при запуске приложения
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+    dbContext.Database.Migrate();
+}
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseMiddleware<NotFoundMiddleware>();
 
@@ -63,6 +73,19 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "TestWork Events API v1"));
 }
+
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
+{
+    //app.UseExceptionHandler("/Error");
+    app.UseHsts();
+}
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "TestWork_Events API v1"));
+}
+
 // Инициализация базы данных
 using (var scope = app.Services.CreateScope())
 {
@@ -78,20 +101,6 @@ using (var scope = app.Services.CreateScope())
         logger.LogError(ex, "An error occurred while seeding the database.");
     }
 }
-
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
-{
-    //app.UseExceptionHandler("/Error");
-    app.UseHsts();
-}
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "TestWork_Events API v1"));
-}
-
-
 app.MapControllers();
 app.UseSwagger();
 app.UseSwaggerUI();
