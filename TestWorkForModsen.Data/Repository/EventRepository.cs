@@ -38,7 +38,7 @@ namespace TestWork_Events.Repository
 
         public async Task DeleteAsync(int id)
         {
-            var _event = await _context.User.FindAsync(id);
+            var _event = await _context.User.FirstOrDefaultAsync(e => e.Id == id);
             if (_event != null)
             {
                 _context.User.Remove(_event);

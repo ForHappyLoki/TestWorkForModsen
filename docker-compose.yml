@@ -1,6 +1,36 @@
+version: '3.8'
+
+networks:
+  bridge:
+    driver: bridge
+
 services:
   testworkformodsen:
-    image: ${DOCKER_REGISTRY-}testworkformodsen
+    image: romanvasilenko/testworkformodsen
     build:
       context: .
-      dockerfile: TestWorkForModsen\Dockerfile
+      dockerfile: TestWorkForModsen/Dockerfile
+    networks:
+      - bridge
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    depends_on:
+      - db
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: mydb
+      POSTGRES_HOST_AUTH_METHOD: trust 
+    ports:
+      - "5432:5432"
+    networks:
+      - bridge
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

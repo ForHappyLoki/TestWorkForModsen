@@ -13,6 +13,16 @@ namespace TestWork_Events.Data
         public DbSet<ConnectorEventUser> ConnectorEventUser { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            foreach (var entity in modelBuilder.Model.GetEntityTypes())
+            {
+                foreach (var property in entity.GetProperties())
+                {
+                    if (property.ClrType == typeof(string))
+                    {
+                        property.SetColumnType("varchar");
+                    }
+                }
+            }
             modelBuilder.Entity<ConnectorEventUser>()
                 .HasKey(e => new { e.EventId, e.UserId }); 
 
