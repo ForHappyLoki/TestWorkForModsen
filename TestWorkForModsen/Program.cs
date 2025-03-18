@@ -66,7 +66,6 @@ using (var scope = app.Services.CreateScope())
     dbContext.Database.Migrate();
 }
 app.UseMiddleware<ExceptionHandlingMiddleware>();
-app.UseMiddleware<NotFoundMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

@@ -3,7 +3,6 @@ using System.Text.Json;
 
 namespace TestWorkForModsen.Middleware
 {
-    //Это мидлваре отрабатывает, когда мы натыкаемся на обрабатываемое исключение
     public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
     {
         private readonly RequestDelegate _next = next;
@@ -13,7 +12,13 @@ namespace TestWorkForModsen.Middleware
         {
             try
             {
-                await _next(context); 
+                await _next(context);
+
+                // Проверяем статус-код ответа
+                if (context.Response.StatusCode < 200 || context.Response.StatusCode >= 300)
+                {
+                    await HandleStatusCodeAsync(context);
+                }
             }
             catch (Exception ex)
             {
@@ -35,8 +40,32 @@ namespace TestWorkForModsen.Middleware
 
             var options = new JsonSerializerOptions
             {
-                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping, 
-                WriteIndented = true 
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                WriteIndented = true
+            };
+
+            var jsonResponse = JsonSerializer.Serialize(response, options);
+            return context.Response.WriteAsync(jsonResponse);
+        }
+
+        private static Task HandleStatusCodeAsync(HttpContext context)
+        {
+            context.Response.ContentType = "application/json";
+
+            var statusCode = context.Response.StatusCode;
+            var statusCodeName = ((HttpStatusCode)statusCode).ToString();
+
+            var response = new
+            {
+                error = "Произошла ошибка.",
+                statusCode = statusCode,
+                statusCodeName = statusCodeName
+            };
+
+            var options = new JsonSerializerOptions
+            {
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                WriteIndented = true
             };
 
             var jsonResponse = JsonSerializer.Serialize(response, options);
