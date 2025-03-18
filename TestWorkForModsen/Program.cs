@@ -22,7 +22,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 
 builder.Services.AddDbContext<DatabaseContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        b => b.MigrationsAssembly("TestWorkForModsen.Data"))); 
 
 builder.Services.AddScoped<IRepository<ConnectorEventUser>, ConnectorEventUserRepository>();
 builder.Services.AddScoped<IRepository<Account>, AccountRepository>();

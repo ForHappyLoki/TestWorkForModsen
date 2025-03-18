@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace TestWorkForModsen.Migrations
+namespace TestWorkForModsen.Data.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -117,7 +117,8 @@ namespace TestWorkForModsen.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Account_UserId",
                 table: "Account",
-                column: "UserId");
+                column: "UserId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_ConnectorEventUser_UserId",
