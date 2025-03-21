@@ -10,13 +10,21 @@ services:
     build:
       context: .
       dockerfile: TestWorkForModsen/Dockerfile
+    #При сборе с нуля это нужно удалить 
     networks:
       - bridge
     ports:
       - "8080:8080"
       - "8081:8081"
+    user: root
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   db:
     image: postgres:13
@@ -24,13 +32,18 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 123
       POSTGRES_DB: mydb
-      POSTGRES_HOST_AUTH_METHOD: trust 
+      POSTGRES_HOST_AUTH_METHOD: trust
     ports:
       - "5432:5432"
     networks:
       - bridge
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d mydb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:

@@ -12,8 +12,8 @@ using TestWork_Events.Data;
 namespace TestWorkForModsen.Data.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20250318200548_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250321152205_LA")]
+    partial class LA
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -64,8 +64,17 @@ var app = builder.Build();
 // Применяем миграции при запуске приложения
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-    dbContext.Database.Migrate();
+    try
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+        Console.WriteLine("Начинаю применение миграции");
+        dbContext.Database.Migrate();
+        Console.WriteLine("Миграция применена");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("При приминении миграции что-то пошло не так:", ex.Message);
+    }
 }
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
