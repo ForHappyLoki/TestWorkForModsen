@@ -8,19 +8,20 @@ namespace TestWork_Events.Tests
 {
     public class AccountRepositoryTests
     {
+        private readonly DbContextOptions<DatabaseContext> _options;
         private readonly DatabaseContext _context;
         private readonly AccountRepository _repository;
-        private User user;
-        private Account account;
+        private readonly User user;
+        private readonly Account account;
 
         public AccountRepositoryTests()
         {
             // Создаем опции для использования InMemoryDatabase
-            var options = new DbContextOptionsBuilder<DatabaseContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
+            _options = new DbContextOptionsBuilder<DatabaseContext>()
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()) // Уникальное имя базы данных для каждого теста
                 .Options;
 
-            _context = new DatabaseContext(options);
+            _context = new DatabaseContext(_options);
             _repository = new AccountRepository(_context);
             user = new User
             {
@@ -39,17 +40,46 @@ namespace TestWork_Events.Tests
             };
         }
 
+        private async Task ClearDatabaseAsync()
+        {
+            _context.Account.RemoveRange(_context.Account);
+            _context.User.RemoveRange(_context.User);
+            await _context.SaveChangesAsync();
+        }
+
         [Fact]
         public async Task GetAllAsync_ShouldReturnAllAccounts()
         {
+            await ClearDatabaseAsync();
             // Arrange
-            var accounts = new List<Account>
+            var user1 = new User
             {
-                new Account { Id = 1, Email = "test1@example.com", Role = "User", Password = "password1", UserId = 1, User = user },
-                new Account { Id = 2, Email = "test2@example.com", Role = "Admin", Password = "password2", UserId = 2, User = user }
+                Name = "Test",
+                Surname = "Test",
+                Birthday = new DateOnly(2000, 1, 1),
+                Email = "Test1@gmail.com"
+            };
+            var user2 = new User
+            {
+                Name = "Test",
+                Surname = "Test",
+                Birthday = new DateOnly(2000, 1, 1),
+                Email = "Test2@gmail.com"
+            };
+            _context.User.Add(user1);
+            _context.User.Add(user2);
+            await _context.SaveChangesAsync();
+            var account1 = new Account
+            {
+                 Id = 1, Email = "test1@example.com", Role = "User", Password = "password1", UserId = 1, User = user1
+            };
+            var account2 = new Account
+            {
+                 Id = 2, Email = "test2@example.com", Role = "Admin", Password = "password2", UserId = 2, User = user2
             };
 
-            _context.Account.AddRange(accounts);
+            _context.Account.Add(account1);
+            _context.Account.Add(account2);
             await _context.SaveChangesAsync();
 
             // Act
@@ -63,6 +93,7 @@ namespace TestWork_Events.Tests
         public async Task GetByIdAsync_ShouldReturnCorrectAccount()
         {
             // Arrange
+            await ClearDatabaseAsync();
             var account = new Account { Id = 1, Email = "test1@example.com", Role = "User", Password = "password1", UserId = 1, User = user };
             _context.Account.Add(account);
             await _context.SaveChangesAsync();
@@ -79,6 +110,7 @@ namespace TestWork_Events.Tests
         public async Task GetByEmailAsync_ShouldReturnCorrectAccount()
         {
             // Arrange
+            await ClearDatabaseAsync();
             var account = new Account { Id = 1, Email = "test1@example.com", Role = "User", Password = "password1", UserId = 1 };
             _context.Account.Add(account);
             await _context.SaveChangesAsync();
@@ -95,6 +127,7 @@ namespace TestWork_Events.Tests
         public async Task AddAsync_ShouldAddAccount()
         {
             // Arrange
+            await ClearDatabaseAsync();
             var account = new Account { Id = 1, Email = "test1@example.com", Role = "User", Password = "password1", UserId = 1, User = user };
 
             // Act
@@ -110,6 +143,7 @@ namespace TestWork_Events.Tests
         public async Task UpdateAsync_ShouldUpdateAccount()
         {
             // Arrange
+            await ClearDatabaseAsync();
             var account = new Account { Id = 1, Email = "test1@example.com", Role = "User", Password = "password1", UserId = 1, User = user };
             _context.Account.Add(account);
             await _context.SaveChangesAsync();
@@ -129,7 +163,9 @@ namespace TestWork_Events.Tests
         public async Task DeleteAsync_ShouldDeleteAccount()
         {
             // Arrange
-            var account = new Account { Id = 1, Email = "test1@example.com", Role = "User", Password = "password1", UserId = 1, User = user }; _context.Account.Add(account);
+            await ClearDatabaseAsync();
+            var account = new Account { Id = 1, Email = "test1@example.com", Role = "User", Password = "password1", UserId = 1, User = user };
+            _context.Account.Add(account);
             await _context.SaveChangesAsync();
 
             // Act
@@ -144,11 +180,36 @@ namespace TestWork_Events.Tests
         public async Task GetPagedAsync_ShouldReturnPagedAccounts()
         {
             // Arrange
+            await ClearDatabaseAsync(); var user1 = new User
+            {
+                Name = "Test",
+                Surname = "Test",
+                Birthday = new DateOnly(2000, 1, 1),
+                Email = "Test1@gmail.com"
+            };
+            var user2 = new User
+            {
+                Name = "Test",
+                Surname = "Test",
+                Birthday = new DateOnly(2000, 1, 1),
+                Email = "Test2@gmail.com"
+            };
+            var user3 = new User
+            {
+                Name = "Test",
+                Surname = "Test",
+                Birthday = new DateOnly(2000, 1, 1),
+                Email = "Test3@gmail.com"
+            };
+            _context.User.Add(user1);
+            _context.User.Add(user2);
+            _context.User.Add(user3);
+            await _context.SaveChangesAsync();
             var accounts = new List<Account>
             {
-                new Account { Id = 1, Email = "test1@example.com", Role = "User", Password = "password1", UserId = 1, User = user },
-                new Account { Id = 2, Email = "test2@example.com", Role = "Admin", Password = "password2", UserId = 2, User = user },
-                new Account { Id = 3, Email = "test3@example.com", Role = "User", Password = "password3", UserId = 3, User = user }
+                new Account { Id = 1, Email = "test1@example.com", Role = "User", Password = "password1", UserId = 1, User = user1 },
+                new Account { Id = 2, Email = "test2@example.com", Role = "Admin", Password = "password2", UserId = 2, User = user2 },
+                new Account { Id = 3, Email = "test3@example.com", Role = "User", Password = "password3", UserId = 3, User = user3 }
             };
 
             _context.Account.AddRange(accounts);

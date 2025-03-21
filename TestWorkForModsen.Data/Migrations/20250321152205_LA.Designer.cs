@@ -9,11 +9,11 @@ using TestWork_Events.Data;
 
 #nullable disable
 
-namespace TestWorkForModsen.Migrations
+namespace TestWorkForModsen.Data.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20250316171901_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250321152205_LA")]
+    partial class LA
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -50,7 +50,8 @@ namespace TestWorkForModsen.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("Account");
                 });
@@ -165,8 +166,8 @@ namespace TestWorkForModsen.Migrations
             modelBuilder.Entity("TestWork_Events.Models.Account", b =>
                 {
                     b.HasOne("TestWork_Events.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
+                        .WithOne()
+                        .HasForeignKey("TestWork_Events.Models.Account", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
