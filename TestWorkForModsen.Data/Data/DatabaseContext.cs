@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
-using TestWork_Events.Models;
+using TestWorkForModsen.Models;
 
-namespace TestWork_Events.Data
+namespace TestWorkForModsen.Data
 {
     public class DatabaseContext : DbContext
     {

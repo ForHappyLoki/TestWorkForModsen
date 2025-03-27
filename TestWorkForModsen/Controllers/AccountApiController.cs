@@ -1,86 +1,110 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using TestWork_Events.Data;
-using TestWork_Events.Models;
-using TestWork_Events.Repository;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
+using TestWorkForModsen.Data;
+using TestWorkForModsen.Models;
+using TestWorkForModsen.Repository;
+using TestWorkForModsen.Data.Models.DTOs;
+using TestWorkForModsen.Data.Models.Validators;
+using TestWorkForModsen.Services.Services;
 
-namespace TestWork_Events.Controllers
+namespace TestWorkForModsen.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AccountApiController(IRepository<Account> repository) : ControllerBase
+    public class AccountApiController : ControllerBase
     {
-        private readonly IRepository<Account> _accountRepository = repository;
-
-        // Получить все аккаунты
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Account>>> GetAll()
+        private readonly IAccountService _accountService;
+        private readonly IValidator<AccountDto> _validator;
+        private readonly IValidator<PaginationDto> _paginationValidator;
+        public AccountApiController(
+            IAccountService accountService,
+            IValidator<AccountDto> validator,
+            IValidator<PaginationDto> paginationValidator)
         {
-            var accounts = await _accountRepository.GetAllAsync();
+            _accountService = accountService;
+            _validator = validator;
+            _paginationValidator = paginationValidator;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<AccountResponseDto>>> GetAll()
+        {
+            var accounts = await _accountService.GetAllAccountsAsync();
             return Ok(accounts);
         }
-        // Получить аккаунт по ID
+
         [HttpGet("id/{id}")]
-        public async Task<ActionResult<Account>> GetById(int id)
+        public async Task<ActionResult<AccountResponseDto>> GetById(int id)
         {
-            var account = await _accountRepository.GetByIdAsync(id);
-            if (account == null)
-            {
-                return NotFound();
-            }
-            return Ok(account);
+            var account = await _accountService.GetAccountByIdAsync(id);
+            return account == null ? NotFound() : Ok(account);
         }
 
-        // Получить аккаунт по email
         [HttpGet("email/{email}")]
-        public async Task<ActionResult<Account>> GetByEmail(string email)
+        public async Task<ActionResult<AccountResponseDto>> GetByEmail(string email)
         {
-            var account = await _accountRepository.GetByEmailAsync(email);
-            if (account == null)
-            {
-                return NotFound();
-            }
-            return Ok(account);
+            var account = await _accountService.GetAccountByEmailAsync(email);
+            return account == null ? NotFound() : Ok(account);
         }
 
-        // Создать новый аккаунт
         [HttpPost]
-        public async Task<ActionResult<Account>> Create([FromBody] Account account)
+        public async Task<ActionResult<AccountResponseDto>> Create([FromBody] AccountDto accountDto)
         {
-            await _accountRepository.AddAsync(account);
+            var validationResult = await _validator.ValidateAsync(accountDto);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
+            var account = await _accountService.CreateAccountAsync(accountDto);
             return CreatedAtAction(nameof(GetById), new { id = account.Id }, account);
         }
 
-        // Обновить аккаунт
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] Account account)
+        public async Task<IActionResult> Update(int id, [FromBody] AccountDto accountDto)
         {
-            if (id != account.Id)
+            var validationResult = await _validator.ValidateAsync(accountDto);
+            if (!validationResult.IsValid)
             {
-                return BadRequest();
+                return BadRequest(validationResult.Errors);
             }
 
-            await _accountRepository.UpdateAsync(account);
-            return NoContent();
+            try
+            {
+                await _accountService.UpdateAccountAsync(id, accountDto);
+                return NoContent();
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
         }
 
-        // Удалить аккаунт
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            await _accountRepository.DeleteAsync(id);
-            return NoContent();
+            try
+            {
+                await _accountService.DeleteAccountAsync(id);
+                return NoContent();
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
         }
 
-        // Пагинация
         [HttpGet("paged")]
-        public async Task<ActionResult<IEnumerable<Account>>> GetPaged(int pageNumber = 1, int pageSize = 10)
+        public async Task<ActionResult<IEnumerable<AccountResponseDto>>> GetPaged(
+            [FromQuery] PaginationDto paginationDto)
         {
-            if (pageNumber < 1 || pageSize < 1)
+            var validationResult = await _paginationValidator.ValidateAsync(new ValidationContext<PaginationDto>(paginationDto));
+            if (!validationResult.IsValid)
             {
-                return BadRequest("Номер страницы и размер страницы должны быть больше 0.");
+                throw new ValidationException(validationResult.Errors);
             }
 
-            var accounts = await _accountRepository.GetPagedAsync(pageNumber, pageSize);
+            var accounts = await _accountService.GetPagedAccountsAsync(paginationDto);
             return Ok(accounts);
         }
     }

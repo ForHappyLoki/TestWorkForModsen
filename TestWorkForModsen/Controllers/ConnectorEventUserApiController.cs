@@ -1,89 +1,102 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TestWork_Events.Models;
-using TestWork_Events.Repository;
+using TestWorkForModsen.Models;
+using TestWorkForModsen.Repository;
+using TestWorkForModsen.Data.Models.DTOs;
+using TestWorkForModsen.Data.Models.Validators;
+using TestWorkForModsen.Services.Services;
 
-namespace TestWork_Events.Controllers
+namespace TestWorkForModsen.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ConnectorEventUserController(IConnectorEventUserRepository<ConnectorEventUser> repository) : ControllerBase
+    public class ConnectorEventUserController : ControllerBase
     {
-        private readonly IConnectorEventUserRepository<ConnectorEventUser> _repository = repository;
+        private readonly IConnectorEventUserService _service;
+        private readonly IValidator<ConnectorEventUserCreateDto> _validator;
+        private readonly IValidator<PaginationDto> _paginationValidator;
 
-        // Получить все записи
+        public ConnectorEventUserController(
+            IConnectorEventUserService service,
+            IValidator<ConnectorEventUserCreateDto> validator,
+            IValidator<PaginationDto> paginationValidator)
+        {
+            _service = service;
+            _validator = validator;
+            _paginationValidator = paginationValidator;
+        }
+
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ConnectorEventUser>>> GetAll()
+        public async Task<ActionResult<IEnumerable<ConnectorEventUserResponseDto>>> GetAll()
         {
-            var records = await _repository.GetAllAsync();
+            var records = await _service.GetAllAsync();
             return Ok(records);
         }
 
-        // Получить запись по составному ключу (EventId и UserId)
         [HttpGet("{eventId}/{userId}")]
-        public async Task<ActionResult<ConnectorEventUser>> GetByCompositeKey(int eventId, int userId)
+        public async Task<ActionResult<ConnectorEventUserResponseDto>> GetByCompositeKey(int eventId, int userId)
         {
-            var record = await _repository.GetByCompositeKeyAsync(eventId, userId);
-            if (record == null)
-            {
-                return NotFound();
-            }
-            return Ok(record);
+            var record = await _service.GetByCompositeKeyAsync(eventId, userId);
+            return record == null ? NotFound() : Ok(record);
         }
 
-        // Получить все записи для конкретного пользователя по UserId
         [HttpGet("user/{userId}")]
-        public async Task<ActionResult<IEnumerable<ConnectorEventUser>>> GetAllByUserId(int userId)
+        public async Task<ActionResult<IEnumerable<ConnectorEventUserResponseDto>>> GetAllByUserId(int userId)
         {
-            var records = await _repository.GetAllByUserIdAsync(userId);
+            var records = await _service.GetAllByUserIdAsync(userId);
             return Ok(records);
         }
 
-        // Получить все записи для конкретного события по EventId
         [HttpGet("event/{eventId}")]
-        public async Task<ActionResult<IEnumerable<ConnectorEventUser>>> GetAllByEventId(int eventId)
+        public async Task<ActionResult<IEnumerable<ConnectorEventUserResponseDto>>> GetAllByEventId(int eventId)
         {
-            var records = await _repository.GetAllByEventIdAsync(eventId);
+            var records = await _service.GetAllByEventIdAsync(eventId);
             return Ok(records);
         }
 
-        // Добавить новую запись
         [HttpPost]
-        public async Task<ActionResult<ConnectorEventUser>> Create([FromBody] ConnectorEventUser record)
+        public async Task<ActionResult<ConnectorEventUserResponseDto>> Create([FromBody] ConnectorEventUserCreateDto dto)
         {
-            await _repository.AddAsync(record);
-            return CreatedAtAction(nameof(GetByCompositeKey), new { eventId = record.EventId, userId = record.UserId }, record);
-        }
-
-        // Обновить запись
-        [HttpPut("{eventId}/{userId}")]
-        public async Task<IActionResult> Update(int eventId, int userId, [FromBody] ConnectorEventUser record)
-        {
-            if (eventId != record.EventId || userId != record.UserId)
+            var validationResult = await _validator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
             {
-                return BadRequest("Несоответствие составного ключа.");
+                return BadRequest(validationResult.Errors);
             }
 
-            await _repository.UpdateAsync(record);
-            return NoContent();
+            try
+            {
+                var result = await _service.CreateAsync(dto);
+                return CreatedAtAction(
+                    nameof(GetByCompositeKey),
+                    new { eventId = result.EventId, userId = result.UserId },
+                    result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         [HttpDelete("{eventId}/{userId}")]
         public async Task<IActionResult> Delete(int eventId, int userId)
         {
-            await _repository.DeleteByCompositeKeyAsync(eventId, userId);
+            await _service.DeleteByCompositeKeyAsync(eventId, userId);
             return NoContent();
         }
 
         [HttpGet("paged")]
-        public async Task<ActionResult<IEnumerable<ConnectorEventUser>>> GetPaged(int pageNumber = 1, int pageSize = 10)
+        public async Task<ActionResult<IEnumerable<ConnectorEventUserResponseDto>>> GetPaged(
+            [FromQuery] PaginationDto pagination)
         {
-            if(pageNumber <= 0 || pageSize <= 0)
+            var validationResult = await _paginationValidator.ValidateAsync(pagination);
+            if (!validationResult.IsValid)
             {
-                return BadRequest("Количество записей и номер страницы должны быть больше нуля");
+                throw new ValidationException(validationResult.Errors);
             }
-            var records = await _repository.GetPagedAsync(pageNumber, pageSize);
+
+            var records = await _service.GetPagedAsync(pagination);
             return Ok(records);
         }
     }

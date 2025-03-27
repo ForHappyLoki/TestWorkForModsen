@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TestWork_Events.Data;
-using TestWork_Events.Models;
-using TestWork_Events.Repository;
+using TestWorkForModsen.Data;
+using TestWorkForModsen.Models;
+using TestWorkForModsen.Repository;
 using Xunit;
 
 namespace Test_TestWorkForModsen

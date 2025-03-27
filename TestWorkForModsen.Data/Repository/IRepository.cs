@@ -1,6 +1,6 @@
-﻿using TestWork_Events.Models;
+﻿using TestWorkForModsen.Models;
 
-namespace TestWork_Events.Repository
+namespace TestWorkForModsen.Repository
 {
     public interface IRepository<T> where T : class
     {

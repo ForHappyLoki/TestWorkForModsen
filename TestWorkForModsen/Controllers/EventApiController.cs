@@ -1,74 +1,97 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using TestWork_Events.Models;
-using TestWork_Events.Repository;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
+using TestWorkForModsen.Models;
+using TestWorkForModsen.Repository;
+using TestWorkForModsen.Data.Models.DTOs;
+using TestWorkForModsen.Data.Models.Validators;
+using TestWorkForModsen.Services.Services;
 
-namespace TestWork_Events.Controllers
+namespace TestWorkForModsen.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class EventApiController(IRepository<Event> repository) : Controller
+    public class EventApiController : ControllerBase
     {
-        private readonly IRepository<Event> _eventRepository = repository;
+        private readonly IEventService _service;
+        private readonly IValidator<PaginationDto> _paginationValidator;
 
-        // Получить всех события
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Event>>> GetAll()
+        public EventApiController(
+            IEventService service,
+           IValidator<PaginationDto> paginationValidator)
         {
-            var _events = await _eventRepository.GetAllAsync();
-            return Ok(_events);
+            _service = service;
+            _paginationValidator = paginationValidator;
         }
-        // Получить событие по ID
-        [HttpGet("id/{id}")]
-        public async Task<ActionResult<Event>> GetById(int id)
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<EventResponseDto>>> GetAll()
         {
-            var _event = await _eventRepository.GetByIdAsync(id);
-            if (_event == null)
+            var events = await _service.GetAllAsync();
+            return Ok(events);
+        }
+
+        [HttpGet("id/{id}")]
+        public async Task<ActionResult<EventResponseDto>> GetById(int id)
+        {
+            var eventDto = await _service.GetByIdAsync(id);
+            return eventDto == null ? NotFound() : Ok(eventDto);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<EventResponseDto>> Create([FromBody] EventCreateDto dto)
+        {
+            try
+            {
+                var result = await _service.CreateAsync(dto);
+                return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(ex.Errors);
+            }
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] EventUpdateDto dto)
+        {
+            try
+            {
+                await _service.UpdateAsync(id, dto);
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(ex.Errors);
+            }
+            catch (KeyNotFoundException)
             {
                 return NotFound();
             }
-            return Ok(_event);
         }
 
-        // Создать новое событие
-        [HttpPost]
-        public async Task<ActionResult<Event>> Create([FromBody] Event _event)
-        {
-            await _eventRepository.AddAsync(_event);
-            return CreatedAtAction(nameof(GetById), new { id = _event.Id }, _event);
-        }
-
-        // Обновить событие
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] Event _event)
-        {
-            if (id != _event.Id)
-            {
-                return BadRequest();
-            }
-
-            await _eventRepository.UpdateAsync(_event);
-            return NoContent();
-        }
-
-        // Удалить событие
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            await _eventRepository.DeleteAsync(id);
+            await _service.DeleteAsync(id);
             return NoContent();
         }
 
-        // Пагинация
         [HttpGet("paged")]
-        public async Task<ActionResult<IEnumerable<Event>>> GetPaged(int pageNumber = 1, int pageSize = 10)
+        public async Task<ActionResult<IEnumerable<EventResponseDto>>> GetPaged(
+            [FromQuery] PaginationDto pagination)
         {
-            if (pageNumber < 1 || pageSize < 1)
+            var validationResult = await _paginationValidator.ValidateAsync(pagination);
+            if (!validationResult.IsValid)
             {
-                return BadRequest("Номер страницы и размер страницы должны быть больше 0.");
+                throw new ValidationException(validationResult.Errors);
             }
 
-            var _events = await _eventRepository.GetPagedAsync(pageNumber, pageSize);
-            return Ok(_events);
+            var events = await _service.GetPagedAsync(pagination);
+            return Ok(events);
         }
     }
 }

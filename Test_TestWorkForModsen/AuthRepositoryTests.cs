@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TestWork_Events.Data;
-using TestWork_Events.Models;
+using TestWorkForModsen.Data;
+using TestWorkForModsen.Models;
 using TestWorkForModsen.Repository;
 using Xunit;
 

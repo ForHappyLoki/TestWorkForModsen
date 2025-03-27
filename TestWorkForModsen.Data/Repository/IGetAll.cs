@@ -1,4 +1,4 @@
-﻿namespace TestWork_Events.Repository
+﻿namespace TestWorkForModsen.Repository
 {
     public interface IGetAll<T> where T : class
     {

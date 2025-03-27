@@ -1,4 +1,4 @@
-﻿namespace TestWork_Events.Repository
+﻿namespace TestWorkForModsen.Repository
 {
     public interface IConnectorEventUserRepository<T> : IRepository<T>, IGetAll<T> where T : class
     {

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using TestWork_Events.Data;
+using TestWorkForModsen.Data;
 
 #nullable disable
 
@@ -22,7 +22,7 @@ namespace TestWorkForModsen.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("TestWork_Events.Models.Account", b =>
+            modelBuilder.Entity("TestWorkForModsen.Models.Account", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -53,7 +53,7 @@ namespace TestWorkForModsen.Data.Migrations
                     b.ToTable("Account");
                 });
 
-            modelBuilder.Entity("TestWork_Events.Models.ConnectorEventUser", b =>
+            modelBuilder.Entity("TestWorkForModsen.Models.ConnectorEventUser", b =>
                 {
                     b.Property<int>("EventId")
                         .HasColumnType("integer");
@@ -71,7 +71,7 @@ namespace TestWorkForModsen.Data.Migrations
                     b.ToTable("ConnectorEventUser");
                 });
 
-            modelBuilder.Entity("TestWork_Events.Models.Event", b =>
+            modelBuilder.Entity("TestWorkForModsen.Models.Event", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -107,7 +107,7 @@ namespace TestWorkForModsen.Data.Migrations
                     b.ToTable("Event");
                 });
 
-            modelBuilder.Entity("TestWork_Events.Models.RefreshToken", b =>
+            modelBuilder.Entity("TestWorkForModsen.Models.RefreshToken", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -132,7 +132,7 @@ namespace TestWorkForModsen.Data.Migrations
                     b.ToTable("RefreshTokens");
                 });
 
-            modelBuilder.Entity("TestWork_Events.Models.User", b =>
+            modelBuilder.Entity("TestWorkForModsen.Models.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -160,26 +160,26 @@ namespace TestWorkForModsen.Data.Migrations
                     b.ToTable("User");
                 });
 
-            modelBuilder.Entity("TestWork_Events.Models.Account", b =>
+            modelBuilder.Entity("TestWorkForModsen.Models.Account", b =>
                 {
-                    b.HasOne("TestWork_Events.Models.User", "User")
+                    b.HasOne("TestWorkForModsen.Models.User", "User")
                         .WithOne()
-                        .HasForeignKey("TestWork_Events.Models.Account", "UserId")
+                        .HasForeignKey("TestWorkForModsen.Models.Account", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("TestWork_Events.Models.ConnectorEventUser", b =>
+            modelBuilder.Entity("TestWorkForModsen.Models.ConnectorEventUser", b =>
                 {
-                    b.HasOne("TestWork_Events.Models.Event", "Event")
+                    b.HasOne("TestWorkForModsen.Models.Event", "Event")
                         .WithMany("ConnectorEventUser")
                         .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TestWork_Events.Models.User", "User")
+                    b.HasOne("TestWorkForModsen.Models.User", "User")
                         .WithMany("ConnectorEventUser")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -190,9 +190,9 @@ namespace TestWorkForModsen.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("TestWork_Events.Models.RefreshToken", b =>
+            modelBuilder.Entity("TestWorkForModsen.Models.RefreshToken", b =>
                 {
-                    b.HasOne("TestWork_Events.Models.Account", "Account")
+                    b.HasOne("TestWorkForModsen.Models.Account", "Account")
                         .WithMany("RefreshTokens")
                         .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -201,17 +201,17 @@ namespace TestWorkForModsen.Data.Migrations
                     b.Navigation("Account");
                 });
 
-            modelBuilder.Entity("TestWork_Events.Models.Account", b =>
+            modelBuilder.Entity("TestWorkForModsen.Models.Account", b =>
                 {
                     b.Navigation("RefreshTokens");
                 });
 
-            modelBuilder.Entity("TestWork_Events.Models.Event", b =>
+            modelBuilder.Entity("TestWorkForModsen.Models.Event", b =>
                 {
                     b.Navigation("ConnectorEventUser");
                 });
 
-            modelBuilder.Entity("TestWork_Events.Models.User", b =>
+            modelBuilder.Entity("TestWorkForModsen.Models.User", b =>
                 {
                     b.Navigation("ConnectorEventUser");
                 });

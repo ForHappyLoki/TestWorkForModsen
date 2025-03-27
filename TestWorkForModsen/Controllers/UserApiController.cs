@@ -1,86 +1,104 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using TestWork_Events.Models;
-using TestWork_Events.Repository;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
+using TestWorkForModsen.Models;
+using TestWorkForModsen.Repository;
+using TestWorkForModsen.Data.Models.DTOs;
+using TestWorkForModsen.Data.Models.Validators;
+using TestWorkForModsen.Services.Services;
 
-namespace TestWork_Events.Controllers
+namespace TestWorkForModsen.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserApiController(IRepository<User> repository) : Controller
+    public class UserApiController : ControllerBase
     {
-        private readonly IRepository<User> _userRepository = repository;
+        private readonly IUserService _service;
+        private readonly IValidator<PaginationDto> _paginationValidator;
 
-        // Получить всех пользователей
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetAll()
+        public UserApiController(
+            IUserService service,
+            IValidator<PaginationDto> paginationValidator)
         {
-            var users = await _userRepository.GetAllAsync();
+            _service = service;
+            _paginationValidator = paginationValidator;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<UserResponseDto>>> GetAll()
+        {
+            var users = await _service.GetAllAsync();
             return Ok(users);
         }
-        // Получить пользователя по ID
+
         [HttpGet("id/{id}")]
-        public async Task<ActionResult<User>> GetById(int id)
+        public async Task<ActionResult<UserResponseDto>> GetById(int id)
         {
-            var account = await _userRepository.GetByIdAsync(id);
-            if (account == null)
-            {
-                return NotFound();
-            }
-            return Ok(account);
+            var user = await _service.GetByIdAsync(id);
+            return user == null ? NotFound() : Ok(user);
         }
 
-        // Получить пользователя по email
         [HttpGet("email/{email}")]
-        public async Task<ActionResult<User>> GetByEmail(string email)
+        public async Task<ActionResult<UserResponseDto>> GetByEmail(string email)
         {
-            var account = await _userRepository.GetByEmailAsync(email);
-            if (account == null)
-            {
-                return NotFound();
-            }
-            return Ok(account);
+            var user = await _service.GetByEmailAsync(email);
+            return user == null ? NotFound() : Ok(user);
         }
 
-        // Создать нового пользователя
         [HttpPost]
-        public async Task<ActionResult<User>> Create([FromBody] User user)
+        public async Task<ActionResult<UserResponseDto>> Create([FromBody] UserCreateDto dto)
         {
-            await _userRepository.AddAsync(user);
-            return CreatedAtAction(nameof(GetById), new { id = user.Id }, user);
-        }
-
-        // Обновить пользователя
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] User account)
-        {
-            if (id != account.Id)
+            try
             {
-                return BadRequest();
+                var result = await _service.CreateAsync(dto);
+                return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
             }
-
-            await _userRepository.UpdateAsync(account);
-            return NoContent();
+            catch (ValidationException ex)
+            {
+                return BadRequest(ex.Errors);
+            }
         }
 
-        // Удалить пользователя
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] UserUpdateDto dto)
+        {
+            try
+            {
+                await _service.UpdateAsync(id, dto);
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                throw new ArgumentException(ex.Message);
+            }
+            catch (ValidationException ex)
+            {
+                throw new ValidationException(ex.Message);
+            }
+            catch (KeyNotFoundException)
+            {
+                throw new KeyNotFoundException();
+            }
+        }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            await _userRepository.DeleteAsync(id);
+            await _service.DeleteAsync(id);
             return NoContent();
         }
 
-        // Пагинация
         [HttpGet("paged")]
-        public async Task<ActionResult<IEnumerable<User>>> GetPaged(int pageNumber = 1, int pageSize = 10)
+        public async Task<ActionResult<IEnumerable<UserResponseDto>>> GetPaged(
+            [FromQuery] PaginationDto pagination)
         {
-            if (pageNumber < 1 || pageSize < 1)
+            var validationResult = await _paginationValidator.ValidateAsync(pagination);
+            if (!validationResult.IsValid)
             {
-                return BadRequest("Номер страницы и размер страницы должны быть больше 0.");
+                throw new ValidationException(validationResult.Errors);
             }
 
-            var accounts = await _userRepository.GetPagedAsync(pageNumber, pageSize);
-            return Ok(accounts);
+            var users = await _service.GetPagedAsync(pagination);
+            return Ok(users);
         }
     }
 }
