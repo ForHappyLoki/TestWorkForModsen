@@ -1,4 +1,4 @@
-﻿using TestWork_Events.Models;
+﻿using TestWorkForModsen.Models;
 
 namespace TestWorkForModsen.Repository
 {

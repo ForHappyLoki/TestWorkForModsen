@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TestWork_Events.ModelView;
+using TestWorkForModsen.Data.Models.DTOs;
 using TestWorkForModsen.Services;
 
-namespace TestWork_Events.Controllers
+namespace TestWorkForModsen.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -11,7 +11,7 @@ namespace TestWork_Events.Controllers
         private readonly IAuthService _authService = authService;
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
         {
             var (accessToken, refreshToken) = await _authService.LoginAsync(request);
             return Ok(new { AccessToken = accessToken, RefreshToken = refreshToken });
@@ -25,7 +25,7 @@ namespace TestWork_Events.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        public async Task<IActionResult> Register([FromBody] RegisterRequestDto request)
         {
             var (accessToken, refreshToken) = await _authService.RegisterAsync(request);
             return Ok(new { AccessToken = accessToken, RefreshToken = refreshToken });

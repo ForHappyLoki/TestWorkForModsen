@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TestWork_Events.Data;
-using TestWork_Events.Models;
+using TestWorkForModsen.Data;
+using TestWorkForModsen.Models;
 
-namespace TestWork_Events.Tools
+namespace TestWorkForModsen.Tools
 {
     public static class DbInitializer
     {

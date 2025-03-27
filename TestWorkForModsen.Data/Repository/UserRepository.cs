@@ -1,8 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TestWork_Events.Data;
-using TestWork_Events.Models;
+using TestWorkForModsen.Data;
+using TestWorkForModsen.Models;
+using TestWorkForModsen.Repository;
 
-namespace TestWork_Events.Repository
+namespace TestWorkForModsen.Repository
 {
     public class UserRepository(DatabaseContext context) : IRepository<User>
     {

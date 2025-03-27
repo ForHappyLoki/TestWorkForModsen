@@ -1,10 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TestWork_Events.Data;
-using TestWork_Events.Models;
-using TestWork_Events.Repository;
+using TestWorkForModsen.Data;
+using TestWorkForModsen.Models;
+using TestWorkForModsen.Repository;
 using Xunit;
 
-namespace TestWork_Events.Tests
+namespace TestWorkForModsen.Tests
 {
     public class AccountRepositoryTests
     {

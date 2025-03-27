@@ -12,12 +12,13 @@ WORKDIR /src
 
 # Копируем файл решения и файлы проектов
 COPY ["TestWorkForModsen.sln", "."]
+COPY ["docker-compose.dcproj", "."]
 COPY ["TestWorkForModsen/TestWorkForModsen.csproj", "TestWorkForModsen/"]
 COPY ["TestWorkForModsen.Data/TestWorkForModsen.Data.csproj", "TestWorkForModsen.Data/"]
 COPY ["TestWorkForModsen.Services/TestWorkForModsen.Services.csproj", "TestWorkForModsen.Services/"]
-
-# Восстанавливаем зависимости для всех проектов
-RUN dotnet restore "TestWorkForModsen.sln"
+COPY ["Test_TestWorkForModsen/Test_TestWorkForModsen.csproj", "Test_TestWorkForModsen/"]
+# Восстанавливаем зависимости, игнорируя отсутствующие проекты (тесты и docker-compose)
+RUN dotnet restore "TestWorkForModsen.sln" 
 
 # Создаем директорию для сертификата
 RUN mkdir -p /https

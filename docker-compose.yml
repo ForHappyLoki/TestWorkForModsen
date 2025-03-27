@@ -1,5 +1,3 @@
-version: '3.8'
-
 networks:
   bridge:
     driver: bridge
@@ -10,7 +8,6 @@ services:
     build:
       context: .
       dockerfile: TestWorkForModsen/Dockerfile
-    #При сборе с нуля это нужно удалить 
     networks:
       - bridge
     ports:

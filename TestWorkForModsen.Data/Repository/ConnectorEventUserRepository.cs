@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TestWork_Events.Data;
-using TestWork_Events.Models;
+using TestWorkForModsen.Data;
+using TestWorkForModsen.Models;
 
-namespace TestWork_Events.Repository
+namespace TestWorkForModsen.Repository
 {
     public class ConnectorEventUserRepository(DatabaseContext context) : IConnectorEventUserRepository<ConnectorEventUser>
     {
