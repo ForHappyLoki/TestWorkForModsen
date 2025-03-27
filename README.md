@@ -27,3 +27,4 @@
 Основная документация по api генерируется свагером и находится по адрессу https://localhost:8081/swagger/index.html. 
 
 Пример вызова api - http://localhost:8080/api/AccountApi/id/1 (Или https://localhost:8081/api/AccountApi/id/1) - вернет json аккаунта под id 1
+https://localhost:8081/api/accountapi/paged?pageNumber=1&pageSize=25 - вернет пагинацию данных первых 25 записей. Для проверки валидации можно запросить отрицательное количество страниц или записей
