@@ -7,6 +7,7 @@ using TestWorkForModsen.Repository;
 using TestWorkForModsen.Data.Models.DTOs;
 using TestWorkForModsen.Data.Models.Validators;
 using TestWorkForModsen.Services.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TestWorkForModsen.Controllers
 {
@@ -39,7 +40,7 @@ namespace TestWorkForModsen.Controllers
         public async Task<ActionResult<ConnectorEventUserResponseDto>> GetByCompositeKey(int eventId, int userId)
         {
             var record = await _service.GetByCompositeKeyAsync(eventId, userId);
-            return record == null ? NotFound() : Ok(record);
+            return Ok(record);
         }
 
         [HttpGet("user/{userId}")]
@@ -56,29 +57,19 @@ namespace TestWorkForModsen.Controllers
             return Ok(records);
         }
 
+        [Authorize(Policy = "AnyAuthenticated")]
         [HttpPost]
         public async Task<ActionResult<ConnectorEventUserResponseDto>> Create([FromBody] ConnectorEventUserCreateDto dto)
         {
-            var validationResult = await _validator.ValidateAsync(dto);
-            if (!validationResult.IsValid)
-            {
-                return BadRequest(validationResult.Errors);
-            }
-
-            try
-            {
-                var result = await _service.CreateAsync(dto);
-                return CreatedAtAction(
-                    nameof(GetByCompositeKey),
-                    new { eventId = result.EventId, userId = result.UserId },
-                    result);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            await _validator.ValidateAndThrowAsync(dto);
+            var result = await _service.CreateAsync(dto);
+            return CreatedAtAction(
+                nameof(GetByCompositeKey),
+                new { eventId = result.EventId, userId = result.UserId },
+                result);
         }
 
+        [Authorize(Policy = "AnyAuthenticated")]
         [HttpDelete("{eventId}/{userId}")]
         public async Task<IActionResult> Delete(int eventId, int userId)
         {
@@ -90,12 +81,7 @@ namespace TestWorkForModsen.Controllers
         public async Task<ActionResult<IEnumerable<ConnectorEventUserResponseDto>>> GetPaged(
             [FromQuery] PaginationDto pagination)
         {
-            var validationResult = await _paginationValidator.ValidateAsync(pagination);
-            if (!validationResult.IsValid)
-            {
-                throw new ValidationException(validationResult.Errors);
-            }
-
+            await _paginationValidator.ValidateAndThrowAsync(pagination);
             var records = await _service.GetPagedAsync(pagination);
             return Ok(records);
         }

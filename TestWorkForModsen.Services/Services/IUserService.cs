@@ -13,7 +13,7 @@ namespace TestWorkForModsen.Services.Services
         Task<UserResponseDto?> GetByIdAsync(int id);
         Task<UserResponseDto?> GetByEmailAsync(string email);
         Task<UserResponseDto> CreateAsync(UserCreateDto dto);
-        Task UpdateAsync(int id, UserUpdateDto dto);
+        Task UpdateAsync(UserUpdateDto dto);
         Task DeleteAsync(int id);
         Task<IEnumerable<UserResponseDto>> GetPagedAsync(PaginationDto pagination);
     }

@@ -36,12 +36,19 @@ namespace TestWorkForModsen.Data.Models.Validators
 
             RuleFor(x => x.Image)
                 .NotNull().WithMessage("Изображение обязательно")
-                .Must(x => x.Length <= 5 * 1024 * 1024) // 5MB
+                .Must(x => x.Length <= 5 * 1024 * 1024) 
                 .WithMessage("Размер изображения не должен превышать 5MB")
                 .Must(x => IsValidImageType(x))
                 .WithMessage("Неподдерживаемый формат изображения");
         }
-
+        public async Task ValidateAndThrowAsync(EventCreateDto dto)
+        {
+            var result = await ValidateAsync(dto);
+            if (!result.IsValid)
+            {
+                throw new ValidationException(result.Errors);
+            }
+        }
         private bool IsValidImageType(byte[] image)
         {
             if (image.Length < 4) return false;

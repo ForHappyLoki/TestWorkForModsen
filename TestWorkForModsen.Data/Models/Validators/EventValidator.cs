@@ -28,5 +28,13 @@ namespace TestWorkForModsen.Data.Models.Validators
             RuleFor(x => x.MaxParticipants)
                 .Matches(@"^\d+$").WithMessage("Укажите число участников");
         }
+        public async Task ValidateAndThrowAsync(EventDto dto)
+        {
+            var result = await ValidateAsync(dto);
+            if (!result.IsValid)
+            {
+                throw new ValidationException(result.Errors);
+            }
+        }
     }
 }

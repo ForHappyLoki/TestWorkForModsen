@@ -20,5 +20,13 @@ namespace TestWorkForModsen.Data.Models.Validators
                 .NotEmpty().WithMessage("Пароль обязателен")
                 .MinimumLength(6).WithMessage("Пароль должен содержать минимум 6 символов");
         }
+        public async Task ValidateAndThrowAsync(LoginRequestDto dto)
+        {
+            var result = await ValidateAsync(dto);
+            if (!result.IsValid)
+            {
+                throw new ValidationException(result.Errors);
+            }
+        }
     }
 }

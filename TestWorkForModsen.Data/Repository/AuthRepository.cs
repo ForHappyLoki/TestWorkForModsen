@@ -4,7 +4,7 @@ using TestWorkForModsen.Models;
 
 namespace TestWorkForModsen.Repository
 {
-    public class AuthRepository(DatabaseContext databaseContext) : IAuthRepository
+    public class AuthRepository(DatabaseContext databaseContext) : IAuthRepository<RefreshToken>
     {
         private readonly DatabaseContext _databaseContext = databaseContext;
 
@@ -21,10 +21,10 @@ namespace TestWorkForModsen.Repository
                 .FirstOrDefaultAsync(rt => rt.Token == token);
         }
 
-        public async Task UpdateRefreshTokenAsync(RefreshToken refreshToken)
+        public async Task UpdateRefreshTokenAsync(RefreshToken refreshToken, CancellationToken cancellationToken = default)
         {
             _databaseContext.RefreshTokens.Update(refreshToken);
-            await _databaseContext.SaveChangesAsync();
+            await _databaseContext.SaveChangesAsync(cancellationToken);
         }
     }
 }

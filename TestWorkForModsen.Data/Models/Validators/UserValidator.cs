@@ -29,5 +29,13 @@ namespace TestWorkForModsen.Data.Models.Validators
                 .EmailAddress().WithMessage("Некорректный формат email")
                 .MaximumLength(100).WithMessage("Максимальная длина email - 100 символов");
         }
+        public async Task ValidateAndThrowAsync(UserCreateDto dto)
+        {
+            var result = await ValidateAsync(dto);
+            if (!result.IsValid)
+            {
+                throw new ValidationException(result.Errors);
+            }
+        }
     }
 }

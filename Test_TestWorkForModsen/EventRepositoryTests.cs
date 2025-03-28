@@ -17,7 +17,7 @@ namespace Test_TestWorkForModsen
         public EventRepositoryTests()
         {
             _options = new DbContextOptionsBuilder<DatabaseContext>()
-                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()) // Уникальное имя базы данных для каждого теста
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()) 
                 .Options;
         }
 

@@ -1,4 +1,4 @@
-﻿namespace TestWorkForModsen.Repository
+﻿namespace TestWorkForModsen.Data.Repository.BasicInterfaces
 {
     public interface IGetAll<T> where T : class
     {

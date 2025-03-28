@@ -15,5 +15,13 @@ namespace TestWorkForModsen.Data.Models.Validators
             RuleFor(x => x.EventId).GreaterThan(0);
             RuleFor(x => x.UserId).GreaterThan(0);
         }
+        public async Task ValidateAndThrowAsync(ConnectorEventUserDto dto)
+        {
+            var result = await ValidateAsync(dto);
+            if (!result.IsValid)
+            {
+                throw new ValidationException(result.Errors);
+            }
+        }
     }
 }

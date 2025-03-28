@@ -5,6 +5,7 @@ using TestWorkForModsen.Repository;
 using TestWorkForModsen.Data.Models.DTOs;
 using TestWorkForModsen.Data.Models.Validators;
 using TestWorkForModsen.Services.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TestWorkForModsen.Controllers
 {
@@ -34,45 +35,26 @@ namespace TestWorkForModsen.Controllers
         public async Task<ActionResult<EventResponseDto>> GetById(int id)
         {
             var eventDto = await _service.GetByIdAsync(id);
-            return eventDto == null ? NotFound() : Ok(eventDto);
+            return Ok(eventDto);
         }
 
+        [Authorize(Policy = "AnyAuthenticated")]
         [HttpPost]
         public async Task<ActionResult<EventResponseDto>> Create([FromBody] EventCreateDto dto)
         {
-            try
-            {
-                var result = await _service.CreateAsync(dto);
-                return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
-            }
-            catch (ValidationException ex)
-            {
-                return BadRequest(ex.Errors);
-            }
+            var result = await _service.CreateAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
 
+        [Authorize(Policy = "AnyAuthenticated")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] EventUpdateDto dto)
+        public async Task<IActionResult> Update([FromBody] EventUpdateDto dto)
         {
-            try
-            {
-                await _service.UpdateAsync(id, dto);
-                return NoContent();
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (ValidationException ex)
-            {
-                return BadRequest(ex.Errors);
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound();
-            }
+            await _service.UpdateAsync(dto);
+            return NoContent();
         }
 
+        [Authorize(Policy = "AnyAuthenticated")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -84,12 +66,7 @@ namespace TestWorkForModsen.Controllers
         public async Task<ActionResult<IEnumerable<EventResponseDto>>> GetPaged(
             [FromQuery] PaginationDto pagination)
         {
-            var validationResult = await _paginationValidator.ValidateAsync(pagination);
-            if (!validationResult.IsValid)
-            {
-                throw new ValidationException(validationResult.Errors);
-            }
-
+            await _paginationValidator.ValidateAndThrowAsync(pagination);
             var events = await _service.GetPagedAsync(pagination);
             return Ok(events);
         }

@@ -1,7 +1,9 @@
-﻿namespace TestWorkForModsen.Repository
+﻿using TestWorkForModsen.Data.Repository.BasicInterfaces;
+
+namespace TestWorkForModsen.Repository
 {
-    public interface IConnectorEventUserRepository<T> : IRepository<T>, IGetAll<T> where T : class
+    public interface IConnectorEventUserRepository<T> : IRepository<T>, IGetAll<T>, ICompositeKey<T> where T : class
     {
-        //Интерфейс-объеденитель двух других
+        //Интерфейс-объеденитель нескольких других
     }
 }

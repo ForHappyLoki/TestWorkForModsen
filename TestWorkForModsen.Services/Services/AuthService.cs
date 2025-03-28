@@ -11,17 +11,16 @@ using System.Text;
 using TestWorkForModsen.Data;
 using TestWorkForModsen.Models;
 using TestWorkForModsen.Options;
-using TestWorkForModsen.Repository;
 using TestWorkForModsen.Data.Models.DTOs;
 using TestWorkForModsen.Data.Repository;
-using TestWorkForModsen.Repository;
+using TestWorkForModsen.Data.Repository.BasicInterfaces;
 
 namespace TestWorkForModsen.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly IRepository<User> _userRepository;
-        private readonly IRepository<Account> _accountRepository;
+        private readonly IUserRepository<User> _userRepository;
+        private readonly IAccountRepository<Account> _accountRepository;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IPasswordHasher<Account> _passwordHasher;
         private readonly JwtSettings _jwtSettings;
@@ -30,8 +29,8 @@ namespace TestWorkForModsen.Services
         private readonly IValidator<RegisterRequestDto> _registerValidator;
 
         public AuthService(
-            IRepository<User> userRepository,
-            IRepository<Account> accountRepository,
+            IUserRepository<User> userRepository,
+            IAccountRepository<Account> accountRepository,
             IRefreshTokenRepository refreshTokenRepository,
             IOptions<JwtSettings> jwtSettings,
             IMapper mapper,
@@ -56,8 +55,7 @@ namespace TestWorkForModsen.Services
             var account = await _accountRepository.GetByEmailAsync(request.Email)
                 ?? throw new UnauthorizedAccessException("Пользователь не найден");
 
-            if (_passwordHasher.VerifyHashedPassword(account, account.Password, request.Password)
-                != PasswordVerificationResult.Success)
+            if (account.Password != request.Password)
             {
                 throw new UnauthorizedAccessException("Неверный пароль");
             }

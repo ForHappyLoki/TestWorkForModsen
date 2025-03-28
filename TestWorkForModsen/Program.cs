@@ -10,7 +10,6 @@ using TestWorkForModsen.Repository;
 using TestWorkForModsen.Tools;
 using Microsoft.OpenApi.Models;
 using TestWorkForModsen.Middleware;
-using TestWorkForModsen.Repository;
 using TestWorkForModsen.Services;
 using FluentValidation;
 using TestWorkForModsen.Data.Models.DTOs;
@@ -34,12 +33,12 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
         b => b.MigrationsAssembly("TestWorkForModsen.Data")));
 
 // Репозитории
-builder.Services.AddScoped<IRepository<Account>, AccountRepository>();
-builder.Services.AddScoped<IRepository<Event>, EventRepository>();
-builder.Services.AddScoped<IRepository<User>, UserRepository>();
-builder.Services.AddScoped<IRepository<ConnectorEventUser>, ConnectorEventUserRepository>();
+builder.Services.AddScoped<IAccountRepository<Account>, AccountRepository>();
+builder.Services.AddScoped<IEventRepository<Event>, EventRepository>();
+builder.Services.AddScoped<IUserRepository<User>, UserRepository>();
+builder.Services.AddScoped<IConnectorEventUserRepository<ConnectorEventUser>, ConnectorEventUserRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
-builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IAuthRepository<RefreshToken>, AuthRepository>();
 
 // Сервисы
 builder.Services.AddScoped<IAccountService, AccountService>();
@@ -47,7 +46,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IConnectorEventUserService, ConnectorEventUserService>();
 builder.Services.AddScoped<IConnectorEventUserRepository<ConnectorEventUser>, 
-    ConnectorEventUserRepository>();
+    ConnectorEventUserRepository>(); 
+builder.Services.AddScoped<IUserService, UserService>();
 // Валидаторы
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddScoped<IValidator<AccountDto>, AccountValidator>();
@@ -90,13 +90,28 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ClockSkew = TimeSpan.Zero 
         };
     });
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    // Только для админов
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("admin"));
+    // Только для обычных пользователей
+    options.AddPolicy("UserOnly", policy => policy.RequireRole("user"));
+    // Для всех авторизованных (админы + пользователи)
+    options.AddPolicy("AnyAuthenticated", policy => policy.RequireAuthenticatedUser());
+});
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "TestWork Events API", Version = "v1" });
 });
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin",
+        builder => builder.WithOrigins("https://localhost:54116")
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .AllowCredentials());
+});
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
@@ -114,12 +129,6 @@ using (var scope = app.Services.CreateScope())
     {
         Console.WriteLine("При приминении миграции что-то пошло не так:", ex.Message);
     }
-}
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "TestWork Events API v1"));
 }
 
 // Configure the HTTP request pipeline.
@@ -157,7 +166,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-
+app.UseCors("AllowSpecificOrigin");
 app.UseAuthorization();
 
 app.MapRazorPages();

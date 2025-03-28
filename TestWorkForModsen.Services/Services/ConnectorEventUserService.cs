@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using TestWorkForModsen.Models;
 using TestWorkForModsen.Repository;
 using TestWorkForModsen.Data.Models.DTOs;
+using TestWorkForModsen.Data.Repository.BasicInterfaces;
+using TestWorkForModsen.Data.Repository;
 
 namespace TestWorkForModsen.Services.Services
 {
@@ -14,14 +16,14 @@ namespace TestWorkForModsen.Services.Services
     {
         private readonly IConnectorEventUserRepository<ConnectorEventUser> _repository;
         private readonly IMapper _mapper;
-        private readonly IRepository<Event> _eventRepository; 
-        private readonly IRepository<User> _userRepository;
+        private readonly IEventRepository<Event> _eventRepository; 
+        private readonly IUserRepository<User> _userRepository;
 
         public ConnectorEventUserService(
             IConnectorEventUserRepository<ConnectorEventUser> repository,
             IMapper mapper,
-            IRepository<Event> eventRepository,
-            IRepository<User> userRepository)
+            IEventRepository<Event> eventRepository,
+            IUserRepository<User> userRepository)
         {
             _repository = repository;
             _mapper = mapper;
@@ -38,6 +40,10 @@ namespace TestWorkForModsen.Services.Services
         public async Task<ConnectorEventUserResponseDto?> GetByCompositeKeyAsync(int eventId, int userId)
         {
             var record = await _repository.GetByCompositeKeyAsync(eventId, userId);
+            if (record == null)
+            {
+                throw new Exception($"Запись с eventId={eventId} и userId={userId} не найдена.");
+            }
             return record == null ? null : _mapper.Map<ConnectorEventUserResponseDto>(record);
         }
 
@@ -55,30 +61,39 @@ namespace TestWorkForModsen.Services.Services
 
         public async Task<ConnectorEventUserResponseDto> CreateAsync(ConnectorEventUserCreateDto dto)
         {
-            // Проверка существования события и пользователя
             if (await _eventRepository.GetByIdAsync(dto.EventId) == null)
                 throw new KeyNotFoundException($"Событие с ID {dto.EventId} не найдено");
 
             if (await _userRepository.GetByIdAsync(dto.UserId) == null)
                 throw new KeyNotFoundException($"Пользователь с ID {dto.UserId} не найден");
-
-            var entity = new ConnectorEventUser
+            try
             {
-                EventId = dto.EventId,
-                UserId = dto.UserId,
-                AdditionTime = DateTime.UtcNow
-            };
-
-            await _repository.AddAsync(entity);
-
-            // Получаем полную запись с навигационными свойствами
-            var createdEntity = await _repository.GetByCompositeKeyAsync(dto.EventId, dto.UserId);
-            return _mapper.Map<ConnectorEventUserResponseDto>(createdEntity);
+                var entity = new ConnectorEventUser
+                {
+                    EventId = dto.EventId,
+                    UserId = dto.UserId,
+                    AdditionTime = DateTime.UtcNow
+                };
+                await _repository.AddAsync(entity);
+                var createdEntity = await _repository.GetByCompositeKeyAsync(dto.EventId, dto.UserId);
+                return _mapper.Map<ConnectorEventUserResponseDto>(createdEntity);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                throw new Exception($"Не удалось создать запись, {ex.Message}");
+            }
         }
 
         public async Task DeleteByCompositeKeyAsync(int eventId, int userId)
         {
-            await _repository.DeleteByCompositeKeyAsync(eventId, userId);
+            try
+            {
+                await _repository.DeleteByCompositeKeyAsync(eventId, userId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Не удалось удалить запись, {ex.Message}");
+            }
         }
 
         public async Task<IEnumerable<ConnectorEventUserResponseDto>> GetPagedAsync(PaginationDto pagination)

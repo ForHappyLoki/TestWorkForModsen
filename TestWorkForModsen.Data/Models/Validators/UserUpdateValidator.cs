@@ -14,6 +14,14 @@ namespace TestWorkForModsen.Data.Models.Validators
         {
             Include(new UserValidator());
             RuleFor(x => x.Id).GreaterThan(0).WithMessage("Неверный ID");
+        }            
+        public async Task ValidateAndThrowAsync(UserUpdateDto dto)
+        {
+            var result = await ValidateAsync(dto);
+            if (!result.IsValid)
+            {
+                throw new ValidationException(result.Errors);
+            }
         }
     }
 }

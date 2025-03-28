@@ -16,9 +16,8 @@ namespace TestWorkForModsen.Tests
 
         public AccountRepositoryTests()
         {
-            // Создаем опции для использования InMemoryDatabase
             _options = new DbContextOptionsBuilder<DatabaseContext>()
-                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()) // Уникальное имя базы данных для каждого теста
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()) 
                 .Options;
 
             _context = new DatabaseContext(_options);

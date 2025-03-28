@@ -1,10 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TestWorkForModsen.Data;
+using TestWorkForModsen.Data.Repository;
 using TestWorkForModsen.Models;
 
 namespace TestWorkForModsen.Repository
 {
-    public class AccountRepository(DatabaseContext context) : IRepository<Account>
+    public class AccountRepository(DatabaseContext context) : IAccountRepository<Account>
     {
         private readonly DatabaseContext _context = context;
 
@@ -29,19 +30,19 @@ namespace TestWorkForModsen.Repository
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(Account account)
+        public async Task UpdateAsync(Account account, CancellationToken cancellationToken = default)
         {
             _context.Entry(account).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
         {
             var account = await _context.Account.FindAsync(id);
             if (account != null)
             {
                 _context.Account.Remove(account);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
             }
         }
 
@@ -53,15 +54,5 @@ namespace TestWorkForModsen.Repository
                 .Take(pageSize)
                 .ToListAsync();
         }
-        public async Task DeleteByCompositeKeyAsync(int eventId, int userId)
-        {
-            throw new System.NotImplementedException("Метод DeleteByCompositeKeyAsync не поддерживается для Account.");
-        }
-
-        public async Task<ConnectorEventUser> GetByCompositeKeyAsync(int eventId, int userId)
-        {
-            throw new System.NotImplementedException("Метод GetByCompositeKeyAsync не поддерживается для Account.");
-        }
-
-}
+    }
 }

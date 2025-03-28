@@ -1,10 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Threading;
 using TestWorkForModsen.Data;
+using TestWorkForModsen.Data.Repository;
 using TestWorkForModsen.Models;
 
 namespace TestWorkForModsen.Repository
 {
-    public class EventRepository(DatabaseContext context) : IRepository<Event>
+    public class EventRepository(DatabaseContext context) : IEventRepository<Event>
     {
         private readonly DatabaseContext _context = context;
         public async Task<IEnumerable<Event>> GetAllAsync()
@@ -17,32 +19,25 @@ namespace TestWorkForModsen.Repository
             return await _context.Event.FindAsync(id);
         }
 
-        //Заглушка
-        public async Task<Event> GetByEmailAsync(string email)
-        {
-            throw new System.NotImplementedException("Метод GetByEmailAsync не поддерживается для Event.");
-
-        }
-
         public async Task AddAsync(Event _event)
         {
             await _context.Event.AddAsync(_event);
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(Event _event)
+        public async Task UpdateAsync(Event _event, CancellationToken cancellationToken = default)
         {
             _context.Entry(_event).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
         {
             var _event = await _context.User.FirstOrDefaultAsync(e => e.Id == id);
             if (_event != null)
             {
                 _context.User.Remove(_event);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
             }
         }
 
@@ -53,15 +48,6 @@ namespace TestWorkForModsen.Repository
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
-        }
-        public async Task DeleteByCompositeKeyAsync(int eventId, int userId)
-        {
-            throw new System.NotImplementedException("Метод DeleteByCompositeKeyAsync не поддерживается для Event.");
-        }
-
-        public async Task<ConnectorEventUser> GetByCompositeKeyAsync(int eventId, int userId)
-        {
-            throw new System.NotImplementedException("Метод GetByCompositeKeyAsync не поддерживается для Event.");
         }
     }
 }

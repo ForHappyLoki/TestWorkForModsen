@@ -19,5 +19,13 @@ namespace TestWorkForModsen.Data.Models.Validators
                 .GreaterThan(0).WithMessage("Page size must be greater than 0.")
                 .LessThanOrEqualTo(100).WithMessage("Page size cannot exceed 100.");
         }
+        public async Task ValidateAndThrowAsync(PaginationDto dto)
+        {
+            var result = await ValidateAsync(dto);
+            if (!result.IsValid)
+            {
+                throw new ValidationException(result.Errors);
+            }
+        }
     }
 }

@@ -5,6 +5,7 @@ using TestWorkForModsen.Repository;
 using TestWorkForModsen.Data.Models.DTOs;
 using TestWorkForModsen.Data.Models.Validators;
 using TestWorkForModsen.Services.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TestWorkForModsen.Controllers
 {
@@ -22,7 +23,7 @@ namespace TestWorkForModsen.Controllers
             _service = service;
             _paginationValidator = paginationValidator;
         }
-
+        
         [HttpGet]
         public async Task<ActionResult<IEnumerable<UserResponseDto>>> GetAll()
         {
@@ -34,69 +35,44 @@ namespace TestWorkForModsen.Controllers
         public async Task<ActionResult<UserResponseDto>> GetById(int id)
         {
             var user = await _service.GetByIdAsync(id);
-            return user == null ? NotFound() : Ok(user);
+            return Ok(user);
         }
 
         [HttpGet("email/{email}")]
         public async Task<ActionResult<UserResponseDto>> GetByEmail(string email)
         {
             var user = await _service.GetByEmailAsync(email);
-            return user == null ? NotFound() : Ok(user);
+            return Ok(user);
         }
 
         [HttpPost]
         public async Task<ActionResult<UserResponseDto>> Create([FromBody] UserCreateDto dto)
         {
-            try
-            {
-                var result = await _service.CreateAsync(dto);
-                return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
-            }
-            catch (ValidationException ex)
-            {
-                return BadRequest(ex.Errors);
-            }
+            var result = await _service.CreateAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
 
+        [Authorize(Policy = "AnyAuthenticated")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] UserUpdateDto dto)
+        public async Task<IActionResult> Update([FromBody] UserUpdateDto dto)
         {
-            try
-            {
-                await _service.UpdateAsync(id, dto);
-                return NoContent();
-            }
-            catch (ArgumentException ex)
-            {
-                throw new ArgumentException(ex.Message);
-            }
-            catch (ValidationException ex)
-            {
-                throw new ValidationException(ex.Message);
-            }
-            catch (KeyNotFoundException)
-            {
-                throw new KeyNotFoundException();
-            }
+            await _service.UpdateAsync(dto);
+            return NoContent();
         }
 
+        [Authorize(Policy = "AnyAuthenticated")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             await _service.DeleteAsync(id);
             return NoContent();
         }
-
+        [Authorize(Policy = "AnyAuthenticated")]
         [HttpGet("paged")]
         public async Task<ActionResult<IEnumerable<UserResponseDto>>> GetPaged(
             [FromQuery] PaginationDto pagination)
         {
-            var validationResult = await _paginationValidator.ValidateAsync(pagination);
-            if (!validationResult.IsValid)
-            {
-                throw new ValidationException(validationResult.Errors);
-            }
-
+            await _paginationValidator.ValidateAndThrowAsync(pagination);
             var users = await _service.GetPagedAsync(pagination);
             return Ok(users);
         }

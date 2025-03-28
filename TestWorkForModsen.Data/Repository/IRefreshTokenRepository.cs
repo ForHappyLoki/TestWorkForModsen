@@ -12,8 +12,8 @@ namespace TestWorkForModsen.Data.Repository
         Task<RefreshToken> GetByTokenAsync(string token);
         Task<RefreshToken> GetValidTokenAsync(string token);
         Task AddAsync(RefreshToken token);
-        Task UpdateAsync(RefreshToken token);
-        Task DeleteAsync(int id);
+        Task UpdateAsync(RefreshToken token, CancellationToken cancellationToken = default);
+        Task DeleteAsync(int id, CancellationToken cancellationToken = default);
         Task DeleteExpiredTokensAsync();
     }
 }
