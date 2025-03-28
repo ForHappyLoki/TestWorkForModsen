@@ -33,5 +33,4 @@
     <ProjectReference Include="..\TestWorkForModsen.Data\TestWorkForModsen.Data.csproj" />
     <ProjectReference Include="..\TestWorkForModsen.Services\TestWorkForModsen.Services.csproj" />
   </ItemGroup>
-
 </Project>

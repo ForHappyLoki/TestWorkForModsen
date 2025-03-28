@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Identity;
 using TestWorkForModsen.Data;
 using TestWorkForModsen.Models;
 using TestWorkForModsen.Options;
+using System.Security.Cryptography.X509Certificates;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,7 +32,10 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
         b => b.MigrationsAssembly("TestWorkForModsen.Data")));
-
+if (builder.Environment.IsDevelopment() && Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") != "true")
+{
+    builder.WebHost.UseUrls("http://localhost:8080");
+}
 // Репозитории
 builder.Services.AddScoped<IAccountRepository<Account>, AccountRepository>();
 builder.Services.AddScoped<IEventRepository<Event>, EventRepository>();
