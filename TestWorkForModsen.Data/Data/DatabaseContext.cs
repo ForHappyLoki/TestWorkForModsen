@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
+using TestWorkForModsen.Data.Data;
 using TestWorkForModsen.Models;
 
 namespace TestWorkForModsen.Data
@@ -18,34 +19,11 @@ namespace TestWorkForModsen.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Настройка сущности ConnectorEventUser
-            modelBuilder.Entity<ConnectorEventUser>()
-                .HasKey(ceu => new { ceu.EventId, ceu.UserId }); 
+            base.OnModelCreating(modelBuilder);
 
-            // Настройка связей для ConnectorEventUser
-            modelBuilder.Entity<ConnectorEventUser>()
-                .HasOne(ceu => ceu.Event)
-                .WithMany(e => e.ConnectorEventUser)
-                .HasForeignKey(ceu => ceu.EventId);
-
-            modelBuilder.Entity<ConnectorEventUser>()
-                .HasOne(ceu => ceu.User)
-                .WithMany(u => u.ConnectorEventUser)
-                .HasForeignKey(ceu => ceu.UserId);
-
-            // Настройка сущности Account
-            modelBuilder.Entity<Account>()
-                .HasOne(a => a.User)
-                .WithOne()
-                .HasForeignKey<Account>(a => a.UserId);
-
-            // Настройка сущности RefreshToken
-            modelBuilder.Entity<RefreshToken>()
-                .HasOne(rt => rt.Account)
-                .WithMany(a => a.RefreshTokens)
-                .HasForeignKey(rt => rt.AccountId);
-
-            // Настройка всех строковых свойств на тип "varchar"
+            modelBuilder.ApplyConfiguration(new ConnectorEventUserConfiguration());
+            modelBuilder.ApplyConfiguration(new AccountConfiguration());
+            modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
             foreach (var entity in modelBuilder.Model.GetEntityTypes())
             {
                 foreach (var property in entity.GetProperties())

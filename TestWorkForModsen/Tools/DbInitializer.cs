@@ -64,9 +64,10 @@ namespace TestWorkForModsen.Tools
                 accounts.Add(new Account
                 {
                     Email = user.Email,
-                    Role = random.Next(2) == 0 ? "User" : "Admin",
+                    Role = accounts.Count == 0 ? "Admin" : (random.Next(2) == 0 ? "User" : "Admin"),
                     Password = $"password{user.Id}",
-                    UserId = user.Id
+                    UserId = user.Id,
+                    User = user
                 });
             }
             context.Account.AddRange(accounts);

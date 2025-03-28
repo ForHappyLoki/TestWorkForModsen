@@ -1,13 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using TestWorkForModsen.Data;
 using TestWorkForModsen.Models;
 
 namespace TestWorkForModsen.Repository
 {
-    public class ConnectorEventUserRepository(DatabaseContext context) : IConnectorEventUserRepository<ConnectorEventUser>
+    public class ConnectorEventUserRepository(DatabaseContext context) 
+        : IConnectorEventUserRepository<ConnectorEventUser>
     {
         private readonly DatabaseContext _context = context;
 
@@ -57,14 +59,14 @@ namespace TestWorkForModsen.Repository
         }
 
         // Обновить запись
-        public async Task UpdateAsync(ConnectorEventUser entity)
+        public async Task UpdateAsync(ConnectorEventUser entity, CancellationToken cancellationToken = default)
         {
             _context.Entry(entity).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
         // Удалить запись по составному ключу (EventId и UserId)
-        public async Task DeleteByCompositeKeyAsync(int eventId, int userId)
+        public async Task DeleteByCompositeKeyAsync(int eventId, int userId, CancellationToken cancellationToken = default)
         {
             var entity = await _context.ConnectorEventUser
                 .FirstOrDefaultAsync(ceu => ceu.EventId == eventId && ceu.UserId == userId);
@@ -72,7 +74,7 @@ namespace TestWorkForModsen.Repository
             if (entity != null)
             {
                 _context.ConnectorEventUser.Remove(entity);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
             }
         }
 
@@ -86,22 +88,6 @@ namespace TestWorkForModsen.Repository
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
-        }
-
-        // Остальные методы (GetByIdAsync, GetByEmailAsync, DeleteAsync) остаются без изменений
-        public async Task<ConnectorEventUser> GetByIdAsync(int id)
-        {
-            throw new System.NotImplementedException("Используйте метод GetByCompositeKeyAsync вместо GetByIdAsync.");
-        }
-
-        public async Task<ConnectorEventUser> GetByEmailAsync(string email)
-        {
-            throw new System.NotImplementedException("Метод GetByEmailAsync не поддерживается для ConnectorEventUser.");
-        }
-
-        public async Task DeleteAsync(int id)
-        {
-            throw new System.NotImplementedException("Используйте метод DeleteByCompositeKeyAsync вместо DeleteAsync.");
         }
     }
 }

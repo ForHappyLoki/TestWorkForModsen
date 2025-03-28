@@ -38,19 +38,19 @@ namespace TestWorkForModsen.Data.Repository
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(RefreshToken token)
+        public async Task UpdateAsync(RefreshToken token, CancellationToken cancellationToken = default)
         {
             _context.RefreshTokens.Update(token);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
         {
             var token = await _context.RefreshTokens.FindAsync(id);
             if (token != null)
             {
                 _context.RefreshTokens.Remove(token);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
             }
         }
 

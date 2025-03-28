@@ -6,6 +6,7 @@ using TestWorkForModsen.Repository;
 using TestWorkForModsen.Data.Models.DTOs;
 using TestWorkForModsen.Data.Models.Validators;
 using TestWorkForModsen.Services.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TestWorkForModsen.Controllers
 {
@@ -26,6 +27,7 @@ namespace TestWorkForModsen.Controllers
             _paginationValidator = paginationValidator;
         }
 
+        [Authorize(Policy = "AnyAuthenticated")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AccountResponseDto>>> GetAll()
         {
@@ -33,77 +35,49 @@ namespace TestWorkForModsen.Controllers
             return Ok(accounts);
         }
 
+        [Authorize(Policy = "AnyAuthenticated")]
         [HttpGet("id/{id}")]
         public async Task<ActionResult<AccountResponseDto>> GetById(int id)
         {
             var account = await _accountService.GetAccountByIdAsync(id);
-            return account == null ? NotFound() : Ok(account);
+            return Ok(account);
         }
-
+        [Authorize(Policy = "AnyAuthenticated")]
         [HttpGet("email/{email}")]
         public async Task<ActionResult<AccountResponseDto>> GetByEmail(string email)
         {
             var account = await _accountService.GetAccountByEmailAsync(email);
-            return account == null ? NotFound() : Ok(account);
+            return Ok(account);
         }
-
         [HttpPost]
         public async Task<ActionResult<AccountResponseDto>> Create([FromBody] AccountDto accountDto)
         {
-            var validationResult = await _validator.ValidateAsync(accountDto);
-            if (!validationResult.IsValid)
-            {
-                return BadRequest(validationResult.Errors);
-            }
-
+            await _validator.ValidateAndThrowAsync(accountDto);
             var account = await _accountService.CreateAccountAsync(accountDto);
             return CreatedAtAction(nameof(GetById), new { id = account.Id }, account);
         }
-
+        [Authorize(Policy = "AnyAuthenticated")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] AccountDto accountDto)
+        public async Task<IActionResult> Update([FromBody] AccountDto accountDto)
         {
-            var validationResult = await _validator.ValidateAsync(accountDto);
-            if (!validationResult.IsValid)
-            {
-                return BadRequest(validationResult.Errors);
-            }
-
-            try
-            {
-                await _accountService.UpdateAccountAsync(id, accountDto);
-                return NoContent();
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound();
-            }
+            await _validator.ValidateAndThrowAsync(accountDto);
+            await _accountService.UpdateAccountAsync(accountDto);
+            return NoContent();
         }
 
+        [Authorize(Policy = "AdminOnly")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            try
-            {
-                await _accountService.DeleteAccountAsync(id);
-                return NoContent();
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound();
-            }
+            await _accountService.DeleteAccountAsync(id);
+            return NoContent();
         }
 
         [HttpGet("paged")]
         public async Task<ActionResult<IEnumerable<AccountResponseDto>>> GetPaged(
             [FromQuery] PaginationDto paginationDto)
         {
-            var validationResult = await _paginationValidator.ValidateAsync(new ValidationContext<PaginationDto>(paginationDto));
-            if (!validationResult.IsValid)
-            {
-                throw new ValidationException(validationResult.Errors);
-            }
-
+            await _paginationValidator.ValidateAndThrowAsync(paginationDto);
             var accounts = await _accountService.GetPagedAccountsAsync(paginationDto);
             return Ok(accounts);
         }

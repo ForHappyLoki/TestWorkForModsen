@@ -18,30 +18,25 @@ namespace TestWorkForModsen.Middleware
 
         public async Task InvokeAsync(HttpContext context)
         {
-            // Сохраняем оригинальный поток ответа
             var originalBodyStream = context.Response.Body;
 
             try
             {
-                // Используем буфер для перехвата ответа
                 using var responseBuffer = new MemoryStream();
                 context.Response.Body = responseBuffer;
 
                 await _next(context);
 
-                // Если статус код не 2xx - обрабатываем как ошибку
                 if (context.Response.StatusCode < 200 || context.Response.StatusCode >= 300)
                 {
                     await HandleErrorResponseAsync(context);
                 }
 
-                // Возвращаем буферизированный ответ
                 responseBuffer.Seek(0, SeekOrigin.Begin);
                 await responseBuffer.CopyToAsync(originalBodyStream);
             }
             catch (Exception ex)
             {
-                // В случае исключения возвращаем оригинальный поток
                 context.Response.Body = originalBodyStream;
                 await HandleExceptionAsync(context, ex);
             }
@@ -51,13 +46,19 @@ namespace TestWorkForModsen.Middleware
         {
             context.Response.ContentType = "application/json";
 
+            var options = new JsonSerializerOptions
+            {
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                WriteIndented = true
+            };
+
             var errorResponse = new
             {
                 StatusCode = context.Response.StatusCode,
                 Message = GetStatusCodeMessage(context.Response.StatusCode)
             };
 
-            await JsonSerializer.SerializeAsync(context.Response.Body, errorResponse);
+            await JsonSerializer.SerializeAsync(context.Response.Body, errorResponse, options);
         }
 
         private async Task HandleExceptionAsync(HttpContext context, Exception exception)
@@ -67,6 +68,12 @@ namespace TestWorkForModsen.Middleware
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
+            var options = new JsonSerializerOptions
+            {
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                WriteIndented = true
+            };
+
             var errorResponse = new
             {
                 StatusCode = context.Response.StatusCode,
@@ -74,7 +81,7 @@ namespace TestWorkForModsen.Middleware
                 Details = exception.Message
             };
 
-            await JsonSerializer.SerializeAsync(context.Response.Body, errorResponse);
+            await JsonSerializer.SerializeAsync(context.Response.Body, errorResponse, options);
         }
 
         private static string GetStatusCodeMessage(int statusCode) => statusCode switch

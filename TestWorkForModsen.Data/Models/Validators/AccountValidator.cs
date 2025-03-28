@@ -29,5 +29,13 @@ namespace TestWorkForModsen.Data.Models.Validators
             RuleFor(x => x.UserId)
                 .GreaterThan(0).WithMessage("UserId must be greater than 0");
         }
+        public async Task ValidateAndThrowAsync(AccountDto dto)
+        {
+            var result = await ValidateAsync(dto);
+            if (!result.IsValid)
+            {
+                throw new ValidationException(result.Errors);
+            }
+        }
     }
 }

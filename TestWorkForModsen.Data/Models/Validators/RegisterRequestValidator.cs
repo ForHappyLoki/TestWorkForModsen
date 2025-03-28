@@ -33,5 +33,13 @@ namespace TestWorkForModsen.Data.Models.Validators
                 .MinimumLength(6).WithMessage("Пароль должен содержать минимум 6 символов")
                 .Equal(x => x.ConfirmPassword).WithMessage("Пароли не совпадают");
         }
+        public async Task ValidateAndThrowAsync(RegisterRequestDto dto)
+        {
+            var result = await ValidateAsync(dto);
+            if (!result.IsValid)
+            {
+                throw new ValidationException(result.Errors);
+            }
+        }
     }
 }

@@ -1,11 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TestWorkForModsen.Data;
+using TestWorkForModsen.Data.Repository;
 using TestWorkForModsen.Models;
 using TestWorkForModsen.Repository;
 
 namespace TestWorkForModsen.Repository
 {
-    public class UserRepository(DatabaseContext context) : IRepository<User>
+    public class UserRepository(DatabaseContext context) : IUserRepository<User>
     {
         private readonly DatabaseContext _context = context;
         public async Task<IEnumerable<User>> GetAllAsync()
@@ -29,19 +30,19 @@ namespace TestWorkForModsen.Repository
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(User user)
+        public async Task UpdateAsync(User user, CancellationToken cancellationToken = default)
         {
             _context.Entry(user).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
         {
             var user = await _context.User.FindAsync(id);
             if (user != null)
             {
                 _context.User.Remove(user);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
             }
         }
         public async Task<IEnumerable<User>> GetPagedAsync(int pageNumber, int pageSize)
@@ -51,14 +52,6 @@ namespace TestWorkForModsen.Repository
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
-        }
-        public async Task DeleteByCompositeKeyAsync(int eventId, int userId)
-        {
-            throw new System.NotImplementedException("Метод DeleteByCompositeKeyAsync не поддерживается для User.");
-        }
-        public async Task<ConnectorEventUser> GetByCompositeKeyAsync(int eventId, int userId)
-        {
-            throw new System.NotImplementedException("Метод GetByCompositeKeyAsync не поддерживается для User.");
         }
     }
 }

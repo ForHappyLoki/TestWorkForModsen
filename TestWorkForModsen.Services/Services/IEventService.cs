@@ -12,7 +12,7 @@ namespace TestWorkForModsen.Services.Services
         Task<IEnumerable<EventResponseDto>> GetAllAsync();
         Task<EventResponseDto?> GetByIdAsync(int id);
         Task<EventResponseDto> CreateAsync(EventCreateDto dto);
-        Task UpdateAsync(int id, EventUpdateDto dto);
+        Task UpdateAsync(EventUpdateDto dto);
         Task DeleteAsync(int id);
         Task<IEnumerable<EventResponseDto>> GetPagedAsync(PaginationDto pagination);
     }

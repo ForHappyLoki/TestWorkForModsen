@@ -14,7 +14,7 @@ namespace TestWorkForModsen.Services.Services
         Task<AccountResponseDto?> GetAccountByIdAsync(int id);
         Task<AccountResponseDto?> GetAccountByEmailAsync(string email);
         Task<AccountResponseDto> CreateAccountAsync(AccountDto accountDto);
-        Task UpdateAccountAsync(int id, AccountDto accountDto);
+        Task UpdateAccountAsync(AccountDto accountDto);
         Task DeleteAccountAsync(int id);
         Task<IEnumerable<AccountResponseDto>> GetPagedAccountsAsync(PaginationDto paginationDto);
     }

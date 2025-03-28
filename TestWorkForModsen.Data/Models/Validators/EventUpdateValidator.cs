@@ -12,7 +12,6 @@ namespace TestWorkForModsen.Data.Models.Validators
     {
         public EventUpdateValidator()
         {
-            // Правильный способ включения правил валидации
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage("Название обязательно")
                 .MaximumLength(100).WithMessage("Максимальная длина названия - 100 символов");
@@ -29,9 +28,16 @@ namespace TestWorkForModsen.Data.Models.Validators
             RuleFor(x => x.MaxParticipants)
                 .Matches(@"^\d+$").WithMessage("Укажите число участников");
 
-            // Дополнительное правило для ID
             RuleFor(x => x.Id)
                 .GreaterThan(0).WithMessage("Неверный ID");
+        }
+        public async Task ValidateAndThrowAsync(EventUpdateDto dto)
+        {
+            var result = await ValidateAsync(dto);
+            if (!result.IsValid)
+            {
+                throw new ValidationException(result.Errors);
+            }
         }
     }
 }

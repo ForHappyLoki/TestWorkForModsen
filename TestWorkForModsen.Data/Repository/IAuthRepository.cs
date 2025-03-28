@@ -2,10 +2,10 @@
 
 namespace TestWorkForModsen.Repository
 {
-    public interface IAuthRepository
+    public interface IAuthRepository<T> where T : class
     {
-        Task<RefreshToken> AddRefreshTokenAsync(RefreshToken refreshToken);
-        Task<RefreshToken?> GetRefreshTokenAsync(string token);
-        Task UpdateRefreshTokenAsync(RefreshToken refreshToken);
+        Task<T> AddRefreshTokenAsync(RefreshToken refreshToken);
+        Task<T?> GetRefreshTokenAsync(string token);
+        Task UpdateRefreshTokenAsync(RefreshToken refreshToken, CancellationToken cancellationToken = default);
     }
 }
