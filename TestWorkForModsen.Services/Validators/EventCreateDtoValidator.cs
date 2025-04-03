@@ -9,7 +9,7 @@ using TestWorkForModsen.Data.Models.DTOs;
 
 namespace TestWorkForModsen.Services.Validators
 {
-    public class EventCreateDtoValidator : AbstractValidator<EventCreateDto>
+    public class EventCreateDtoValidator : BaseValidator<EventCreateDto>
     {
         public EventCreateDtoValidator()
         {
@@ -41,20 +41,6 @@ namespace TestWorkForModsen.Services.Validators
                 .WithMessage("Размер изображения не должен превышать 5MB")
                 .Must(x => IsValidImageType(x))
                 .WithMessage("Неподдерживаемый формат изображения");
-        }
-        public async Task ValidateAndThrowAsync(EventCreateDto dto)
-        {
-            var result = await ValidateAsync(dto);
-            if (!result.IsValid)
-            {
-                var errors = result.Errors
-                    .GroupBy(e => e.PropertyName)
-                    .ToDictionary(
-                        g => g.Key,
-                        g => g.Select(e => e.ErrorMessage).ToArray()
-                    );
-                throw new CustomValidationException(errors);
-            }
         }
         private bool IsValidImageType(byte[] image)
         {

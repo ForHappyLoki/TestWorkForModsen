@@ -39,11 +39,8 @@ namespace TestWorkForModsen.Repository
 
         public async Task DeleteAsync(Account account, CancellationToken cancellationToken = default)
         {
-            if (account != null)
-            {
-                _context.Account.Remove(account);
-                await _context.SaveChangesAsync(cancellationToken);
-            }
+            _context.Account.Remove(account);
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
         public async Task<IEnumerable<Account>> GetPagedAsync(int pageNumber, int pageSize)

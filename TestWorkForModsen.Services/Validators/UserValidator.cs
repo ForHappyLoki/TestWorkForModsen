@@ -9,7 +9,7 @@ using TestWorkForModsen.Data.Models.DTOs;
 
 namespace TestWorkForModsen.Services.Validators
 {
-    public class UserValidator : AbstractValidator<UserCreateDto>
+    public class UserValidator : BaseValidator<UserCreateDto>
     {
         public UserValidator()
         {
@@ -29,20 +29,6 @@ namespace TestWorkForModsen.Services.Validators
                 .NotEmpty().WithMessage("Email обязателен")
                 .EmailAddress().WithMessage("Некорректный формат email")
                 .MaximumLength(100).WithMessage("Максимальная длина email - 100 символов");
-        }
-        public async Task ValidateAndThrowAsync(UserCreateDto dto)
-        {
-            var result = await ValidateAsync(dto);
-            if (!result.IsValid)
-            {
-                var errors = result.Errors
-                    .GroupBy(e => e.PropertyName)
-                    .ToDictionary(
-                        g => g.Key,
-                        g => g.Select(e => e.ErrorMessage).ToArray()
-                    );
-                throw new CustomValidationException(errors);
-            }
         }
     }
 }

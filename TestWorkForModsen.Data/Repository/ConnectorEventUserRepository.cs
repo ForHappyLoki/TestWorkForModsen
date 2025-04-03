@@ -15,7 +15,6 @@ namespace TestWorkForModsen.Repository
     {
         private readonly DatabaseContext _context = context;
 
-        // Получить все записи
         public async Task<IEnumerable<ConnectorEventUser>> GetAllAsync()
         {
             return await _context.ConnectorEventUser
@@ -64,11 +63,8 @@ namespace TestWorkForModsen.Repository
 
         public async Task DeleteByCompositeKeyAsync(ConnectorEventUser entity, CancellationToken cancellationToken = default)
         {
-            if (entity != null)
-            {
-                _context.ConnectorEventUser.Remove(entity);
-                await _context.SaveChangesAsync(cancellationToken);
-            }
+            _context.ConnectorEventUser.Remove(entity);
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
         public async Task<IEnumerable<ConnectorEventUser>> GetPagedAsync(int pageNumber, int pageSize)

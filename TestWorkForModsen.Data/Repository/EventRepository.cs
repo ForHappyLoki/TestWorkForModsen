@@ -35,11 +35,8 @@ namespace TestWorkForModsen.Repository
 
         public async Task DeleteAsync(Event _event, CancellationToken cancellationToken = default)
         {
-            if (_event != null)
-            {
-                _context.Event.Remove(_event);
-                await _context.SaveChangesAsync(cancellationToken);
-            }
+            _context.Event.Remove(_event);
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
         public async Task<IEnumerable<Event>> GetPagedAsync(int pageNumber, int pageSize)

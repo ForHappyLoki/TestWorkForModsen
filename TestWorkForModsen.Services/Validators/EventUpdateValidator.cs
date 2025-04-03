@@ -9,7 +9,7 @@ using TestWorkForModsen.Data.Models.DTOs;
 
 namespace TestWorkForModsen.Services.Validators
 {
-    public class EventUpdateValidator : AbstractValidator<EventUpdateDto>
+    public class EventUpdateValidator : BaseValidator<EventUpdateDto>
     {
         public EventUpdateValidator()
         {
@@ -31,20 +31,6 @@ namespace TestWorkForModsen.Services.Validators
 
             RuleFor(x => x.Id)
                 .GreaterThan(0).WithMessage("Неверный ID");
-        }
-        public async Task ValidateAndThrowAsync(EventUpdateDto dto)
-        {
-            var result = await ValidateAsync(dto);
-            if (!result.IsValid)
-            {
-                var errors = result.Errors
-                    .GroupBy(e => e.PropertyName)
-                    .ToDictionary(
-                        g => g.Key,
-                        g => g.Select(e => e.ErrorMessage).ToArray()
-                    );
-                throw new CustomValidationException(errors);
-            }
         }
     }
 }

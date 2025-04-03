@@ -9,26 +9,12 @@ using TestWorkForModsen.Data.Models.DTOs;
 
 namespace TestWorkForModsen.Services.Validators
 {
-    public class UserUpdateValidator : AbstractValidator<UserUpdateDto>
+    public class UserUpdateValidator : BaseValidator<UserUpdateDto>
     {
         public UserUpdateValidator()
         {
             Include(new UserValidator());
             RuleFor(x => x.Id).GreaterThan(0).WithMessage("Неверный ID");
-        }
-        public async Task ValidateAndThrowAsync(UserUpdateDto dto)
-        {
-            var result = await ValidateAsync(dto);
-            if (!result.IsValid)
-            {
-                var errors = result.Errors
-                    .GroupBy(e => e.PropertyName)
-                    .ToDictionary(
-                        g => g.Key,
-                        g => g.Select(e => e.ErrorMessage).ToArray()
-                    );
-                throw new CustomValidationException(errors);
-            }
         }
     }
 }
