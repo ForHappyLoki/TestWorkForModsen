@@ -72,9 +72,9 @@ namespace TestWorkForModsen.Controllers
 
         [Authorize(Policy = "AdminOnly")]
         [HttpDelete("{eventId}/{userId}")]
-        public async Task<IActionResult> Delete(int eventId, int userId)
+        public async Task<IActionResult> Delete(int eventId, int userId, CancellationToken cancellationToken = default)
         {
-            await _service.DeleteByCompositeKeyAsync(eventId, userId);
+            await _service.DeleteByCompositeKeyAsync(eventId, userId, cancellationToken);
             return NoContent();
         }
 

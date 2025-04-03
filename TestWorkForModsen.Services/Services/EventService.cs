@@ -59,7 +59,7 @@ namespace TestWorkForModsen.Services.Services
             }
         }
 
-        public async Task UpdateAsync(EventUpdateDto dto)
+        public async Task UpdateAsync(EventUpdateDto dto, CancellationToken cancellationToken = default)
         {
             await _updateValidator.ValidateAndThrowAsync(dto);
 
@@ -77,7 +77,7 @@ namespace TestWorkForModsen.Services.Services
             }
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
         {
             var eventExists = await _repository.GetByIdAsync(id);
             if (eventExists == null)
@@ -87,7 +87,7 @@ namespace TestWorkForModsen.Services.Services
 
             try
             {
-                await _repository.DeleteAsync(eventExists);
+                await _repository.DeleteAsync(eventExists, cancellationToken);
             }
             catch (Exception ex)
             {

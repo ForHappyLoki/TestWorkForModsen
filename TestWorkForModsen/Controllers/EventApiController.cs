@@ -47,17 +47,17 @@ namespace TestWorkForModsen.Controllers
 
         [Authorize(Policy = "AdminOnly")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update([FromBody] EventUpdateDto dto)
+        public async Task<IActionResult> Update([FromBody] EventUpdateDto dto, CancellationToken cancellationToken = default)
         {
-            await _service.UpdateAsync(dto);
+            await _service.UpdateAsync(dto, cancellationToken);
             return NoContent();
         }
 
         [Authorize(Policy = "AdminOnly")]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken = default)
         {
-            await _service.DeleteAsync(id);
+            await _service.DeleteAsync(id, cancellationToken);
             return NoContent();
         }
 

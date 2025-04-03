@@ -42,8 +42,11 @@ namespace TestWorkForModsen.Data.Repository
 
         public async Task UpdateAsync(RefreshToken token, CancellationToken cancellationToken = default)
         {
-            _context.RefreshTokens.Update(token);
-            await _context.SaveChangesAsync(cancellationToken);
+            if (token != null)
+            {
+                _context.RefreshTokens.Update(token);
+                await _context.SaveChangesAsync(cancellationToken);
+            }
         }
 
         public async Task DeleteAsync(RefreshToken token, CancellationToken cancellationToken = default)

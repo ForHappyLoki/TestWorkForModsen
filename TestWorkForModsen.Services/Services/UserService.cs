@@ -59,7 +59,9 @@ namespace TestWorkForModsen.Services.Services
             await _createValidator.ValidateAndThrowAsync(dto);
 
             if (await _repository.GetByEmailAsync(dto.Email) != null)
+            {
                 throw new CustomConflictException($"Пользователь с email {dto.Email} уже существует");
+            }
 
             try
             {
@@ -73,7 +75,7 @@ namespace TestWorkForModsen.Services.Services
             }
         }
 
-        public async Task UpdateAsync(UserUpdateDto dto)
+        public async Task UpdateAsync(UserUpdateDto dto, CancellationToken cancellationToken = default)
         {
             await _updateValidator.ValidateAndThrowAsync(dto);
 
@@ -91,15 +93,17 @@ namespace TestWorkForModsen.Services.Services
             }
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
         {
             var userExists = await _repository.GetByIdAsync(id);
             if (userExists == null)
+            {
                 throw new CustomNotFoundException($"Пользователь с ID {id} не найден");
+            }
 
             try
             {
-                await _repository.DeleteAsync(userExists);
+                await _repository.DeleteAsync(userExists, cancellationToken);
             }
             catch (Exception ex)
             {

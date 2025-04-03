@@ -53,6 +53,8 @@ builder.Services.AddScoped<IConnectorEventUserService, ConnectorEventUserService
 builder.Services.AddScoped<IConnectorEventUserRepository<ConnectorEventUser>, 
     ConnectorEventUserRepository>(); 
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 // Валидаторы
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddScoped<IValidator<AccountDto>, AccountValidator>();
@@ -67,6 +69,7 @@ builder.Services.AddScoped<IValidator<EventDto>, EventValidator>();
 builder.Services.AddScoped<IValidator<LoginRequestDto>, LoginRequestValidator>();
 builder.Services.AddScoped<IValidator<EventCreateDto>, EventCreateDtoValidator>();
 builder.Services.AddValidatorsFromAssembly(typeof(AccountValidator).Assembly);
+builder.Services.AddScoped<IValidator<RefreshToken>, RefreshTokenValidator>();
 // AutoMapper (одна регистрация для всех профилей)
 builder.Services.AddAutoMapper(assemblies: AppDomain.CurrentDomain.GetAssemblies());
 // Специальные сервисы

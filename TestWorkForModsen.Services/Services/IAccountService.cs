@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TestWorkForModsen.Models;
 using TestWorkForModsen.Data.Models.DTOs;
+using System.Threading;
 
 namespace TestWorkForModsen.Services.Services
 {
@@ -14,8 +15,8 @@ namespace TestWorkForModsen.Services.Services
         Task<AccountResponseDto?> GetAccountByIdAsync(int id);
         Task<AccountResponseDto?> GetAccountByEmailAsync(string email);
         Task<AccountResponseDto> CreateAccountAsync(AccountDto accountDto);
-        Task UpdateAccountAsync(AccountDto accountDto);
-        Task DeleteAccountAsync(int id);
+        Task UpdateAccountAsync(AccountDto accountDto, CancellationToken cancellationToken);
+        Task DeleteAccountAsync(int id, CancellationToken cancellationToken);
         Task<IEnumerable<AccountResponseDto>> GetPagedAccountsAsync(PaginationDto paginationDto);
     }
 }

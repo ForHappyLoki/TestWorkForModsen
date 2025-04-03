@@ -95,14 +95,14 @@ namespace TestWorkForModsen.Services.Services
             }
         }
 
-        public async Task DeleteByCompositeKeyAsync(int eventId, int userId)
+        public async Task DeleteByCompositeKeyAsync(int eventId, int userId, CancellationToken cancellationToken = default)
         {
             var existingRelation = await _repository.GetByCompositeKeyAsync(eventId, userId)
                 ?? throw new CustomNotFoundException($"Связь между событием {eventId} и пользователем {userId} не найдена");
 
             try
             {
-                await _repository.DeleteByCompositeKeyAsync(existingRelation);
+                await _repository.DeleteByCompositeKeyAsync(existingRelation, cancellationToken);
             }
             catch (Exception ex)
             {

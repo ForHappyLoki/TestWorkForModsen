@@ -66,7 +66,7 @@ namespace TestWorkForModsen.Services.Services
             }
         }
 
-        public async Task UpdateAccountAsync(AccountDto accountDto)
+        public async Task UpdateAccountAsync(AccountDto accountDto, CancellationToken cancellationToken = default)
         {
             if (accountDto == null)
                 throw new CustomBadRequestException("Данные аккаунта не могут быть null");
@@ -77,7 +77,7 @@ namespace TestWorkForModsen.Services.Services
             try
             {
                 _mapper.Map(accountDto, existingAccount);
-                await _accountRepository.UpdateAsync(existingAccount);
+                await _accountRepository.UpdateAsync(existingAccount, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -85,15 +85,17 @@ namespace TestWorkForModsen.Services.Services
             }
         }
 
-        public async Task DeleteAccountAsync(int id)
+        public async Task DeleteAccountAsync(int id, CancellationToken cancellationToken = default)
         {
             var accountExists = await _accountRepository.GetByIdAsync(id);
             if (accountExists == null)
+            {
                 throw new CustomNotFoundException($"Аккаунт с ID {id} не найден");
+            }
 
             try
             {
-                await _accountRepository.DeleteAsync(accountExists);
+                await _accountRepository.DeleteAsync(accountExists, cancellationToken);
             }
             catch (Exception ex)
             {

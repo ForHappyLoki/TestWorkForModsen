@@ -2,6 +2,8 @@
 using TestWorkForModsen.Data.Data;
 using TestWorkForModsen.Data.Models;
 using TestWorkForModsen.Data.Repository;
+using TestWorkForModsen.Models;
+using TestWorkForModsen.Repository;
 using Xunit;
 
 namespace Test_TestWorkForModsen
@@ -168,7 +170,7 @@ namespace Test_TestWorkForModsen
             await _context.SaveChangesAsync();
 
             // Act
-            await _repository.DeleteAsync(1);
+            await _repository.DeleteAsync(account);
             var result = await _context.Account.FindAsync(1);
 
             // Assert

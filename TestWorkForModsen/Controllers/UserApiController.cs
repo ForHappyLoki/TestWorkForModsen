@@ -53,17 +53,17 @@ namespace TestWorkForModsen.Controllers
 
         [Authorize(Policy = "AnyAuthenticated")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update([FromBody] UserUpdateDto dto)
+        public async Task<IActionResult> Update([FromBody] UserUpdateDto dto, CancellationToken cancellationToken = default)
         {
-            await _service.UpdateAsync(dto);
+            await _service.UpdateAsync(dto, cancellationToken);
             return NoContent();
         }
 
         [Authorize(Policy = "AnyAuthenticated")]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken = default)
         {
-            await _service.DeleteAsync(id);
+            await _service.DeleteAsync(id, cancellationToken);
             return NoContent();
         }
         [Authorize(Policy = "AnyAuthenticated")]

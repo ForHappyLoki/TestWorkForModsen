@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TestWorkForModsen.Data.Data;
+using TestWorkForModsen.Data.Models;
 using TestWorkForModsen.Models;
 using TestWorkForModsen.Repository;
 using Xunit;
@@ -224,10 +225,11 @@ namespace Test_TestWorkForModsen
         [Fact]
         public async Task DeleteAsync_RemovesUserFromDatabase()
         {
+            User user1;
             // Arrange
             using (var context = new DatabaseContext(_options))
             {
-                var user1 = new User
+                user1 = new User
                 {
                     Id = 1,
                     Name = "User1",
@@ -244,7 +246,7 @@ namespace Test_TestWorkForModsen
                 var repository = new UserRepository(context);
 
                 // Act
-                await repository.DeleteAsync(1);
+                await repository.DeleteAsync(user1);
 
                 // Assert
                 var result = await context.User.FindAsync(1);
