@@ -8,7 +8,7 @@ namespace TestWorkForModsen.Data.Repository.BasicInterfaces
 {
     public interface ISingleKey<T> where T : class
     {
-        Task DeleteAsync(int id, CancellationToken cancellationToken = default);
+        Task DeleteAsync(T t, CancellationToken cancellationToken = default);
         Task<T> GetByIdAsync(int id);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TestWorkForModsen.Data;
+using TestWorkForModsen.Data.Data;
 using TestWorkForModsen.Data.Repository;
 using TestWorkForModsen.Models;
 
@@ -36,9 +37,8 @@ namespace TestWorkForModsen.Repository
             await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+        public async Task DeleteAsync(Account account, CancellationToken cancellationToken = default)
         {
-            var account = await _context.Account.FindAsync(id);
             if (account != null)
             {
                 _context.Account.Remove(account);

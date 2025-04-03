@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TestWorkForModsen.Data.Models;
 using TestWorkForModsen.Models;
 
 namespace TestWorkForModsen.Data.Repository
@@ -13,7 +14,7 @@ namespace TestWorkForModsen.Data.Repository
         Task<RefreshToken> GetValidTokenAsync(string token);
         Task AddAsync(RefreshToken token);
         Task UpdateAsync(RefreshToken token, CancellationToken cancellationToken = default);
-        Task DeleteAsync(int id, CancellationToken cancellationToken = default);
+        Task DeleteAsync(RefreshToken token, CancellationToken cancellationToken = default);
         Task DeleteExpiredTokensAsync();
     }
 }

@@ -1,11 +1,10 @@
-﻿using FluentValidation;
+﻿    using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TestWorkForModsen.Models;
 using TestWorkForModsen.Repository;
 using TestWorkForModsen.Data.Models.DTOs;
-using TestWorkForModsen.Data.Models.Validators;
 using TestWorkForModsen.Services.Services;
 using Microsoft.AspNetCore.Authorization;
 
@@ -36,6 +35,7 @@ namespace TestWorkForModsen.Controllers
             return Ok(records);
         }
 
+        [Authorize(Policy = "AdminOnly")]
         [HttpGet("{eventId}/{userId}")]
         public async Task<ActionResult<ConnectorEventUserResponseDto>> GetByCompositeKey(int eventId, int userId)
         {
@@ -43,6 +43,7 @@ namespace TestWorkForModsen.Controllers
             return Ok(record);
         }
 
+        [Authorize(Policy = "AdminOnly")]
         [HttpGet("user/{userId}")]
         public async Task<ActionResult<IEnumerable<ConnectorEventUserResponseDto>>> GetAllByUserId(int userId)
         {
@@ -57,7 +58,7 @@ namespace TestWorkForModsen.Controllers
             return Ok(records);
         }
 
-        [Authorize(Policy = "AnyAuthenticated")]
+        [Authorize(Policy = "AdminOnly")]
         [HttpPost]
         public async Task<ActionResult<ConnectorEventUserResponseDto>> Create([FromBody] ConnectorEventUserCreateDto dto)
         {
@@ -69,7 +70,7 @@ namespace TestWorkForModsen.Controllers
                 result);
         }
 
-        [Authorize(Policy = "AnyAuthenticated")]
+        [Authorize(Policy = "AdminOnly")]
         [HttpDelete("{eventId}/{userId}")]
         public async Task<IActionResult> Delete(int eventId, int userId)
         {

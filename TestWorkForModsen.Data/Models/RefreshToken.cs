@@ -1,4 +1,6 @@
-﻿namespace TestWorkForModsen.Models
+﻿using TestWorkForModsen.Models;
+
+namespace TestWorkForModsen.Data.Models
 {
     public class RefreshToken
     {

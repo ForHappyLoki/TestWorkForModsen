@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TestWorkForModsen.Models;
 using TestWorkForModsen.Data.Models.DTOs;
+using TestWorkForModsen.Data.Models;
 
-namespace TestWorkForModsen.Data.Models.Mappings
+namespace TestWorkForModsen.Services.Mappings
 {
     public class UserProfile : Profile
     {

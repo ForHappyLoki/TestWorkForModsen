@@ -1,6 +1,6 @@
-﻿using TestWorkForModsen.Models;
+﻿using TestWorkForModsen.Data.Models;
 
-namespace TestWorkForModsen.Repository
+namespace TestWorkForModsen.Data.Repository
 {
     public interface IAuthRepository<T> where T : class
     {

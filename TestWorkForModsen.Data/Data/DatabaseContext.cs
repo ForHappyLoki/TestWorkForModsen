@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
-using TestWorkForModsen.Data.Data;
+using TestWorkForModsen.Data.Models;
 using TestWorkForModsen.Models;
 
-namespace TestWorkForModsen.Data
+namespace TestWorkForModsen.Data.Data
 {
     public class DatabaseContext : DbContext
     {

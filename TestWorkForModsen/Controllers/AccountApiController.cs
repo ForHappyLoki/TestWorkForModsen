@@ -4,7 +4,6 @@ using TestWorkForModsen.Data;
 using TestWorkForModsen.Models;
 using TestWorkForModsen.Repository;
 using TestWorkForModsen.Data.Models.DTOs;
-using TestWorkForModsen.Data.Models.Validators;
 using TestWorkForModsen.Services.Services;
 using Microsoft.AspNetCore.Authorization;
 
@@ -27,22 +26,21 @@ namespace TestWorkForModsen.Controllers
             _paginationValidator = paginationValidator;
         }
 
-        [Authorize(Policy = "AnyAuthenticated")]
+        [Authorize(Policy = "AdminOnly")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AccountResponseDto>>> GetAll()
         {
             var accounts = await _accountService.GetAllAccountsAsync();
             return Ok(accounts);
         }
-
-        [Authorize(Policy = "AnyAuthenticated")]
+        [Authorize(Policy = "AdminOnly")]
         [HttpGet("id/{id}")]
         public async Task<ActionResult<AccountResponseDto>> GetById(int id)
         {
             var account = await _accountService.GetAccountByIdAsync(id);
             return Ok(account);
         }
-        [Authorize(Policy = "AnyAuthenticated")]
+        [Authorize(Policy = "AdminOnly")]
         [HttpGet("email/{email}")]
         public async Task<ActionResult<AccountResponseDto>> GetByEmail(string email)
         {
@@ -56,7 +54,7 @@ namespace TestWorkForModsen.Controllers
             var account = await _accountService.CreateAccountAsync(accountDto);
             return CreatedAtAction(nameof(GetById), new { id = account.Id }, account);
         }
-        [Authorize(Policy = "AnyAuthenticated")]
+        [Authorize(Policy = "AdminOnly")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update([FromBody] AccountDto accountDto)
         {
@@ -73,6 +71,7 @@ namespace TestWorkForModsen.Controllers
             return NoContent();
         }
 
+        [Authorize(Policy = "AdminOnly")]
         [HttpGet("paged")]
         public async Task<ActionResult<IEnumerable<AccountResponseDto>>> GetPaged(
             [FromQuery] PaginationDto paginationDto)

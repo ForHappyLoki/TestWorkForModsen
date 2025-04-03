@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Threading;
 using TestWorkForModsen.Data;
+using TestWorkForModsen.Data.Data;
+using TestWorkForModsen.Data.Models;
 using TestWorkForModsen.Data.Repository;
 using TestWorkForModsen.Models;
 
@@ -31,12 +33,11 @@ namespace TestWorkForModsen.Repository
             await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+        public async Task DeleteAsync(Event _event, CancellationToken cancellationToken = default)
         {
-            var _event = await _context.User.FirstOrDefaultAsync(e => e.Id == id);
             if (_event != null)
             {
-                _context.User.Remove(_event);
+                _context.Event.Remove(_event);
                 await _context.SaveChangesAsync(cancellationToken);
             }
         }

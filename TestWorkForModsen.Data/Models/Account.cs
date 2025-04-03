@@ -1,4 +1,6 @@
-﻿namespace TestWorkForModsen.Models
+﻿using TestWorkForModsen.Data.Models;
+
+namespace TestWorkForModsen.Models
 {
     public class Account
     {

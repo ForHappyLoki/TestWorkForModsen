@@ -18,6 +18,7 @@ COPY ["TestWorkForModsen.sln", "."]
 COPY ["docker-compose.dcproj", "."]
 COPY ["TestWorkForModsen/TestWorkForModsen.csproj", "TestWorkForModsen/"]
 COPY ["TestWorkForModsen.Data/TestWorkForModsen.Data.csproj", "TestWorkForModsen.Data/"]
+COPY ["TestWorkForModsen.Core/TestWorkForModsen.Core.csproj", "TestWorkForModsen.Core/"]
 COPY ["TestWorkForModsen.Services/TestWorkForModsen.Services.csproj", "TestWorkForModsen.Services/"]
 COPY ["Test_TestWorkForModsen/Test_TestWorkForModsen.csproj", "Test_TestWorkForModsen/"]
 

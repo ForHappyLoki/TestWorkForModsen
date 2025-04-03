@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using TestWorkForModsen.Models;
 using TestWorkForModsen.Repository;
 using TestWorkForModsen.Data.Models.DTOs;
-using TestWorkForModsen.Data.Models.Validators;
 using TestWorkForModsen.Services.Services;
 using Microsoft.AspNetCore.Authorization;
 
@@ -38,7 +37,7 @@ namespace TestWorkForModsen.Controllers
             return Ok(eventDto);
         }
 
-        [Authorize(Policy = "AnyAuthenticated")]
+        [Authorize(Policy = "AdminOnly")]
         [HttpPost]
         public async Task<ActionResult<EventResponseDto>> Create([FromBody] EventCreateDto dto)
         {
@@ -46,7 +45,7 @@ namespace TestWorkForModsen.Controllers
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
 
-        [Authorize(Policy = "AnyAuthenticated")]
+        [Authorize(Policy = "AdminOnly")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update([FromBody] EventUpdateDto dto)
         {
@@ -54,7 +53,7 @@ namespace TestWorkForModsen.Controllers
             return NoContent();
         }
 
-        [Authorize(Policy = "AnyAuthenticated")]
+        [Authorize(Policy = "AdminOnly")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

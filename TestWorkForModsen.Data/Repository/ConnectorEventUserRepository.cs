@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TestWorkForModsen.Data;
+using TestWorkForModsen.Data.Data;
+using TestWorkForModsen.Data.Models;
 using TestWorkForModsen.Models;
 
 namespace TestWorkForModsen.Repository
@@ -66,11 +68,8 @@ namespace TestWorkForModsen.Repository
         }
 
         // Удалить запись по составному ключу (EventId и UserId)
-        public async Task DeleteByCompositeKeyAsync(int eventId, int userId, CancellationToken cancellationToken = default)
+        public async Task DeleteByCompositeKeyAsync(ConnectorEventUser entity, CancellationToken cancellationToken = default)
         {
-            var entity = await _context.ConnectorEventUser
-                .FirstOrDefaultAsync(ceu => ceu.EventId == eventId && ceu.UserId == userId);
-
             if (entity != null)
             {
                 _context.ConnectorEventUser.Remove(entity);

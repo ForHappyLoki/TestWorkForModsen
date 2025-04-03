@@ -1,10 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TestWorkForModsen.Data;
-using TestWorkForModsen.Models;
-using TestWorkForModsen.Repository;
+using TestWorkForModsen.Data.Data;
+using TestWorkForModsen.Data.Models;
+using TestWorkForModsen.Data.Repository;
 using Xunit;
 
-namespace TestWorkForModsen.Tests
+namespace Test_TestWorkForModsen
 {
     public class AccountRepositoryTests
     {

@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using TestWorkForModsen.Models;
 using TestWorkForModsen.Repository;
 using TestWorkForModsen.Data.Models.DTOs;
-using TestWorkForModsen.Data.Models.Validators;
 using TestWorkForModsen.Services.Services;
 using Microsoft.AspNetCore.Authorization;
 

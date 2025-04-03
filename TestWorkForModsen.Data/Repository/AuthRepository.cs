@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TestWorkForModsen.Data;
-using TestWorkForModsen.Models;
+using TestWorkForModsen.Data.Data;
+using TestWorkForModsen.Data.Models;
 
-namespace TestWorkForModsen.Repository
+namespace TestWorkForModsen.Data.Repository
 {
     public class AuthRepository(DatabaseContext databaseContext) : IAuthRepository<RefreshToken>
     {

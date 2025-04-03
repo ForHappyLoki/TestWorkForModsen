@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TestWorkForModsen.Data;
+using TestWorkForModsen.Data.Data;
 using TestWorkForModsen.Models;
 using TestWorkForModsen.Repository;
 using Xunit;

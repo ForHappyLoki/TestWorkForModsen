@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TestWorkForModsen.Data;
+using TestWorkForModsen.Data.Data;
 using TestWorkForModsen.Models;
 using TestWorkForModsen.Repository;
 using Xunit;
@@ -297,32 +297,6 @@ namespace Test_TestWorkForModsen
                 Assert.Equal(2, result.Count());
                 Assert.Equal("User1", result.First().Name);
                 Assert.Equal("User2", result.Last().Name);
-            }
-        }
-
-        [Fact]
-        public async Task DeleteByCompositeKeyAsync_ThrowsNotImplementedException()
-        {
-            // Arrange
-            using (var context = new DatabaseContext(_options))
-            {
-                var repository = new UserRepository(context);
-
-                // Act & Assert
-                await Assert.ThrowsAsync<NotImplementedException>(() => repository.DeleteByCompositeKeyAsync(1, 1));
-            }
-        }
-
-        [Fact]
-        public async Task GetByCompositeKeyAsync_ThrowsNotImplementedException()
-        {
-            // Arrange
-            using (var context = new DatabaseContext(_options))
-            {
-                var repository = new UserRepository(context);
-
-                // Act & Assert
-                await Assert.ThrowsAsync<NotImplementedException>(() => repository.GetByCompositeKeyAsync(1, 1));
             }
         }
     }

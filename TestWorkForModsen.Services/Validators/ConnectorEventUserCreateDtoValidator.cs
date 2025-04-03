@@ -1,7 +1,8 @@
 ﻿using FluentValidation;
+using TestWorkForModsen.Core.Exceptions;
 using TestWorkForModsen.Data.Models.DTOs;
 
-namespace TestWorkForModsen.Data.Models.Validators
+namespace TestWorkForModsen.Services.Validators
 {
     public class ConnectorEventUserCreateDtoValidator : AbstractValidator<ConnectorEventUserCreateDto>
     {
@@ -15,7 +16,13 @@ namespace TestWorkForModsen.Data.Models.Validators
             var result = await ValidateAsync(dto);
             if (!result.IsValid)
             {
-                throw new ValidationException(result.Errors);
+                var errors = result.Errors
+                    .GroupBy(e => e.PropertyName)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(e => e.ErrorMessage).ToArray()
+                    );
+                throw new CustomValidationException(errors);
             }
         }
     }

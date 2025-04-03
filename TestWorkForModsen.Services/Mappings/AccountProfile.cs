@@ -4,11 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static System.Runtime.InteropServices.JavaScript.JSType;
-using TestWorkForModsen.Models;
 using TestWorkForModsen.Data.Models.DTOs;
 using AutoMapper;
+using TestWorkForModsen.Data.Models;
+using TestWorkForModsen.Models;
 
-namespace TestWorkForModsen.Data.Models.Mappings
+namespace TestWorkForModsen.Services.Mappings
 {
     public class AccountProfile : Profile
     {
