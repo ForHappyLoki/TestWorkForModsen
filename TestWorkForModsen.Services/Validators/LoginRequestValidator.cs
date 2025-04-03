@@ -9,7 +9,7 @@ using TestWorkForModsen.Data.Models.DTOs;
 
 namespace TestWorkForModsen.Services.Validators
 {
-    public class LoginRequestValidator : AbstractValidator<LoginRequestDto>
+    public class LoginRequestValidator : BaseValidator<LoginRequestDto>
     {
         public LoginRequestValidator()
         {
@@ -20,20 +20,6 @@ namespace TestWorkForModsen.Services.Validators
             RuleFor(x => x.Password)
                 .NotEmpty().WithMessage("Пароль обязателен")
                 .MinimumLength(6).WithMessage("Пароль должен содержать минимум 6 символов");
-        }
-        public async Task ValidateAndThrowAsync(LoginRequestDto dto)
-        {
-            var result = await ValidateAsync(dto);
-            if (!result.IsValid)
-            {
-                var errors = result.Errors
-                    .GroupBy(e => e.PropertyName)
-                    .ToDictionary(
-                        g => g.Key,
-                        g => g.Select(e => e.ErrorMessage).ToArray()
-                    );
-                throw new CustomValidationException(errors);
-            }
         }
     }
 }

@@ -9,7 +9,7 @@ using TestWorkForModsen.Data.Models.DTOs;
 
 namespace TestWorkForModsen.Services.Validators
 {
-    public class PaginationValidator : AbstractValidator<PaginationDto>
+    public class PaginationValidator : BaseValidator<PaginationDto>
     {
         public PaginationValidator()
         {
@@ -19,20 +19,6 @@ namespace TestWorkForModsen.Services.Validators
             RuleFor(x => x.PageSize)
                 .GreaterThan(0).WithMessage("Page size must be greater than 0.")
                 .LessThanOrEqualTo(100).WithMessage("Page size cannot exceed 100.");
-        }
-        public async Task ValidateAndThrowAsync(PaginationDto dto)
-        {
-            var result = await ValidateAsync(dto);
-            if (!result.IsValid)
-            {
-                var errors = result.Errors
-                    .GroupBy(e => e.PropertyName)
-                    .ToDictionary(
-                        g => g.Key,
-                        g => g.Select(e => e.ErrorMessage).ToArray()
-                    );
-                throw new CustomValidationException(errors);
-            }
         }
     }
 }

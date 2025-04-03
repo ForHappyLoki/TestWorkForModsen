@@ -9,7 +9,7 @@ using TestWorkForModsen.Data.Models.DTOs;
 
 namespace TestWorkForModsen.Services.Validators
 {
-    public class EventValidator : AbstractValidator<EventDto>
+    public class EventValidator : BaseValidator<EventDto>
     {
         public EventValidator()
         {
@@ -28,20 +28,6 @@ namespace TestWorkForModsen.Services.Validators
 
             RuleFor(x => x.MaxParticipants)
                 .Matches(@"^\d+$").WithMessage("Укажите число участников");
-        }
-        public async Task ValidateAndThrowAsync(EventDto dto)
-        {
-            var result = await ValidateAsync(dto);
-            if (!result.IsValid)
-            {
-                var errors = result.Errors
-                    .GroupBy(e => e.PropertyName)
-                    .ToDictionary(
-                        g => g.Key,
-                        g => g.Select(e => e.ErrorMessage).ToArray()
-                    );
-                throw new CustomValidationException(errors);
-            }
         }
     }
 }

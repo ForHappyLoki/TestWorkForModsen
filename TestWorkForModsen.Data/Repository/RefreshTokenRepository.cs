@@ -42,30 +42,14 @@ namespace TestWorkForModsen.Data.Repository
 
         public async Task UpdateAsync(RefreshToken token, CancellationToken cancellationToken = default)
         {
-            if (token != null)
-            {
-                _context.RefreshTokens.Update(token);
-                await _context.SaveChangesAsync(cancellationToken);
-            }
+            _context.RefreshTokens.Update(token);
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
         public async Task DeleteAsync(RefreshToken token, CancellationToken cancellationToken = default)
         {
-            if (token != null)
-            {
-                _context.RefreshTokens.Remove(token);
-                await _context.SaveChangesAsync(cancellationToken);
-            }
-        }
-
-        public async Task DeleteExpiredTokensAsync()
-        {
-            var expiredTokens = await _context.RefreshTokens
-                .Where(rt => rt.ExpiryTime <= DateTime.UtcNow)
-                .ToListAsync();
-
-            _context.RefreshTokens.RemoveRange(expiredTokens);
-            await _context.SaveChangesAsync();
+            _context.RefreshTokens.Remove(token);
+            await _context.SaveChangesAsync(cancellationToken);
         }
     }
 }

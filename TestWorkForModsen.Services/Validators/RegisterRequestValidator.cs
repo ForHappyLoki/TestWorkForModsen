@@ -9,7 +9,7 @@ using TestWorkForModsen.Data.Models.DTOs;
 
 namespace TestWorkForModsen.Services.Validators
 {
-    public class RegisterRequestValidator : AbstractValidator<RegisterRequestDto>
+    public class RegisterRequestValidator : BaseValidator<RegisterRequestDto>
     {
         public RegisterRequestValidator()
         {
@@ -33,20 +33,6 @@ namespace TestWorkForModsen.Services.Validators
                 .NotEmpty().WithMessage("Пароль обязателен")
                 .MinimumLength(6).WithMessage("Пароль должен содержать минимум 6 символов")
                 .Equal(x => x.ConfirmPassword).WithMessage("Пароли не совпадают");
-        }
-        public async Task ValidateAndThrowAsync(RegisterRequestDto dto)
-        {
-            var result = await ValidateAsync(dto);
-            if (!result.IsValid)
-            {
-                var errors = result.Errors
-                    .GroupBy(e => e.PropertyName)
-                    .ToDictionary(
-                        g => g.Key,
-                        g => g.Select(e => e.ErrorMessage).ToArray()
-                    );
-                throw new CustomValidationException(errors);
-            }
         }
     }
 }

@@ -9,7 +9,7 @@ using TestWorkForModsen.Data.Models.DTOs;
 
 namespace TestWorkForModsen.Services.Validators
 {
-    public class AccountValidator : AbstractValidator<AccountDto>
+    public class AccountValidator : BaseValidator<AccountDto>
     {
         public AccountValidator()
         {
@@ -29,20 +29,6 @@ namespace TestWorkForModsen.Services.Validators
 
             RuleFor(x => x.UserId)
                 .GreaterThan(0).WithMessage("UserId must be greater than 0");
-        }
-        public async Task ValidateAndThrowAsync(AccountDto dto)
-        {
-            var result = await ValidateAsync(dto);
-            if (!result.IsValid)
-            {
-                var errors = result.Errors
-                    .GroupBy(e => e.PropertyName)
-                    .ToDictionary(
-                        g => g.Key,
-                        g => g.Select(e => e.ErrorMessage).ToArray()
-                    );
-                throw new CustomValidationException(errors);
-            }
         }
     }
 }
