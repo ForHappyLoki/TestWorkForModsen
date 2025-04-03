@@ -1,13 +1,9 @@
 ﻿using AutoMapper;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TestWorkForModsen.Models;
 using TestWorkForModsen.Data.Models.DTOs;
-using TestWorkForModsen.Data.Repository.BasicInterfaces;
 using TestWorkForModsen.Data.Repository;
+using TestWorkForModsen.Core.Exceptions;
+using System.Net;
 
 namespace TestWorkForModsen.Services.Services
 {
@@ -25,71 +21,97 @@ namespace TestWorkForModsen.Services.Services
         public async Task<IEnumerable<AccountResponseDto>> GetAllAccountsAsync()
         {
             var accounts = await _accountRepository.GetAllAsync();
-            return _mapper.Map<IEnumerable<AccountResponseDto>>(accounts);
+            return accounts.Any()
+                ? _mapper.Map<IEnumerable<AccountResponseDto>>(accounts)
+                : throw new CustomNotFoundException("Аккаунты не найдены");
         }
 
-        public async Task<AccountResponseDto?> GetAccountByIdAsync(int id)
+        public async Task<AccountResponseDto> GetAccountByIdAsync(int id)
         {
             var account = await _accountRepository.GetByIdAsync(id);
-            if (account == null)
-            {
-                throw new Exception($"Аккаунт с ID {id} не найден");
-            }
-            return _mapper.Map<AccountResponseDto>(account);
+            return account != null
+                ? _mapper.Map<AccountResponseDto>(account)
+                : throw new CustomNotFoundException($"Аккаунт с ID {id} не найден");
         }
 
-        public async Task<AccountResponseDto?> GetAccountByEmailAsync(string email)
+        public async Task<AccountResponseDto> GetAccountByEmailAsync(string email)
         {
+            if (string.IsNullOrWhiteSpace(email))
+                throw new CustomBadRequestException("Email не может быть пустым");
+
             var account = await _accountRepository.GetByEmailAsync(email);
-            if (account == null)
-            {
-                throw new Exception($"Аккаунт с email {email} не найден");
-            }
-            return _mapper.Map<AccountResponseDto>(account);
+            return account != null
+                ? _mapper.Map<AccountResponseDto>(account)
+                : throw new CustomNotFoundException($"Аккаунт с email {email} не найден");
         }
 
         public async Task<AccountResponseDto> CreateAccountAsync(AccountDto accountDto)
         {
-            var account = _mapper.Map<Account>(accountDto);
-            await _accountRepository.AddAsync(account);
-            return _mapper.Map<AccountResponseDto>(account);
-        }
+            if (accountDto == null)
+                throw new CustomBadRequestException("Данные аккаунта не могут быть null");
 
-        public async Task UpdateAccountAsync(AccountDto accountDto)
-        {
+            var existingAccount = await _accountRepository.GetByEmailAsync(accountDto.Email);
+            if (existingAccount != null)
+                throw new CustomConflictException($"Аккаунт с email {accountDto.Email} уже существует");
+
             try
             {
-                var account = await _accountRepository.GetByIdAsync(accountDto.UserId);
-                if (account == null)
-                {
-                    throw new KeyNotFoundException("Account not found");
-                }
-
-                _mapper.Map(accountDto, account);
-                await _accountRepository.UpdateAsync(account);
+                var account = _mapper.Map<Account>(accountDto);
+                await _accountRepository.AddAsync(account);
+                return _mapper.Map<AccountResponseDto>(account);
             }
-            catch
+            catch (Exception ex)
             {
-                throw new Exception("Не удалось обновить запись");
+                throw new CustomDatabaseException("Ошибка при создании аккаунта", ex);
             }
         }
 
-        public async Task DeleteAccountAsync(int id)
+        public async Task UpdateAccountAsync(AccountDto accountDto, CancellationToken cancellationToken = default)
         {
+            if (accountDto == null)
+                throw new CustomBadRequestException("Данные аккаунта не могут быть null");
+
+            var existingAccount = await _accountRepository.GetByIdAsync(accountDto.UserId)
+                ?? throw new CustomNotFoundException($"Аккаунт с ID {accountDto.UserId} не найден");
+
             try
             {
-                await _accountRepository.DeleteAsync(id);
+                _mapper.Map(accountDto, existingAccount);
+                await _accountRepository.UpdateAsync(existingAccount, cancellationToken);
             }
-            catch (KeyNotFoundException ex)
+            catch (Exception ex)
             {
-                throw new KeyNotFoundException($"Не удалось удалить запись, {ex.Message}");
+                throw new CustomDatabaseException("Ошибка при обновлении аккаунта", ex);
+            }
+        }
+
+        public async Task DeleteAccountAsync(int id, CancellationToken cancellationToken = default)
+        {
+            var accountExists = await _accountRepository.GetByIdAsync(id);
+            if (accountExists == null)
+            {
+                throw new CustomNotFoundException($"Аккаунт с ID {id} не найден");
+            }
+
+            try
+            {
+                await _accountRepository.DeleteAsync(accountExists, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                throw new CustomDatabaseException("Ошибка при удалении аккаунта", ex);
             }
         }
 
         public async Task<IEnumerable<AccountResponseDto>> GetPagedAccountsAsync(PaginationDto paginationDto)
         {
+            if (paginationDto == null || paginationDto.PageNumber < 1 || paginationDto.PageSize < 1)
+                throw new CustomBadRequestException("Некорректные параметры пагинации");
+
             var accounts = await _accountRepository.GetPagedAsync(paginationDto.PageNumber, paginationDto.PageSize);
-            return _mapper.Map<IEnumerable<AccountResponseDto>>(accounts);
+            return accounts.Any()
+                ? _mapper.Map<IEnumerable<AccountResponseDto>>(accounts)
+                : throw new CustomNotFoundException("Аккаунты не найдены для указанной страницы");
         }
     }
 }

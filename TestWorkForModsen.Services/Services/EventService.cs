@@ -1,14 +1,10 @@
 ﻿using AutoMapper;
 using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TestWorkForModsen.Models;
+using TestWorkForModsen.Core.Exceptions;
+using TestWorkForModsen.Data.Models;
 using TestWorkForModsen.Data.Models.DTOs;
-using TestWorkForModsen.Data.Repository.BasicInterfaces;
 using TestWorkForModsen.Data.Repository;
+using TestWorkForModsen.Models;
 
 namespace TestWorkForModsen.Services.Services
 {
@@ -34,62 +30,82 @@ namespace TestWorkForModsen.Services.Services
         public async Task<IEnumerable<EventResponseDto>> GetAllAsync()
         {
             var events = await _repository.GetAllAsync();
-            return _mapper.Map<IEnumerable<EventResponseDto>>(events);
+            return events.Any()
+                ? _mapper.Map<IEnumerable<EventResponseDto>>(events)
+                : throw new CustomNotFoundException("События не найдены");
         }
 
-        public async Task<EventResponseDto?> GetByIdAsync(int id)
+        public async Task<EventResponseDto> GetByIdAsync(int id)
         {
             var eventEntity = await _repository.GetByIdAsync(id);
-            if (eventEntity == null)
-            {
-                throw new Exception($"Событие с ID {id} не найдено");
-            }
-            return eventEntity == null ? null : _mapper.Map<EventResponseDto>(eventEntity);
+            return eventEntity != null
+                ? _mapper.Map<EventResponseDto>(eventEntity)
+                : throw new CustomNotFoundException($"Событие с ID {id} не найдено");
         }
 
         public async Task<EventResponseDto> CreateAsync(EventCreateDto dto)
         {
+            await _createValidator.ValidateAndThrowAsync(dto);
+
             try
             {
-                await _createValidator.ValidateAndThrowAsync(dto);
-
                 var eventEntity = _mapper.Map<Event>(dto);
                 await _repository.AddAsync(eventEntity);
-
                 return _mapper.Map<EventResponseDto>(eventEntity);
-            }
-            catch (Exception ex) 
-            {
-                throw new Exception($"Ошибка при создании события, {ex.Message}");
-            }
-        }
-
-        public async Task UpdateAsync(EventUpdateDto dto)
-        {
-            await _updateValidator.ValidateAndThrowAsync(dto);
-
-            var eventEntity = await _repository.GetByIdAsync(dto.Id);
-            if (eventEntity == null) throw new KeyNotFoundException("Событие не найдено");
-
-            _mapper.Map(dto, eventEntity);
-            await _repository.UpdateAsync(eventEntity);
-        }
-
-        public async Task DeleteAsync(int id)
-        {
-            try
-            {
-                await _repository.DeleteAsync(id);
             }
             catch (Exception ex)
             {
-                throw new Exception($"Ошибка при удалении события, {ex.Message}");
+                throw new CustomDatabaseException("Ошибка при создании события", ex);
             }
         }
+
+        public async Task UpdateAsync(EventUpdateDto dto, CancellationToken cancellationToken = default)
+        {
+            await _updateValidator.ValidateAndThrowAsync(dto);
+
+            var eventEntity = await _repository.GetByIdAsync(dto.Id)
+                ?? throw new CustomNotFoundException($"Событие с ID {dto.Id} не найдено");
+
+            try
+            {
+                _mapper.Map(dto, eventEntity);
+                await _repository.UpdateAsync(eventEntity);
+            }
+            catch (Exception ex)
+            {
+                throw new CustomDatabaseException("Ошибка при обновлении события", ex);
+            }
+        }
+
+        public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+        {
+            var eventExists = await _repository.GetByIdAsync(id);
+            if (eventExists == null)
+            {
+                throw new CustomNotFoundException($"Событие с ID {id} не найдено");
+            }
+
+            try
+            {
+                await _repository.DeleteAsync(eventExists, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                throw new CustomDatabaseException("Ошибка при удалении события", ex);
+            }
+        }
+
         public async Task<IEnumerable<EventResponseDto>> GetPagedAsync(PaginationDto pagination)
         {
+            if (pagination.PageNumber < 1 || pagination.PageSize < 1)
+            {
+                throw new CustomBadRequestException("Некорректные параметры пагинации");
+            }
+
             var events = await _repository.GetPagedAsync(pagination.PageNumber, pagination.PageSize);
-            return _mapper.Map<IEnumerable<EventResponseDto>>(events);
+            return events.Any()
+                ? _mapper.Map<IEnumerable<EventResponseDto>>(events)
+                : throw new CustomNotFoundException("События не найдены для указанной страницы");
         }
     }
 }

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TestWorkForModsen.Models;
+using TestWorkForModsen.Data.Models;
 
 namespace TestWorkForModsen.Data.Data
 {

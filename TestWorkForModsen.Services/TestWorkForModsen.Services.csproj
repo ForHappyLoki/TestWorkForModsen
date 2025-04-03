@@ -26,6 +26,7 @@
 	</ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TestWorkForModsen.Core\TestWorkForModsen.Core.csproj" />
     <ProjectReference Include="..\TestWorkForModsen.Data\TestWorkForModsen.Data.csproj" />
   </ItemGroup>
 

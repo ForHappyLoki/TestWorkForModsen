@@ -3,7 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TestWorkForModsen.Data;
+using TestWorkForModsen.Data.Data;
+using TestWorkForModsen.Data.Models;
 using TestWorkForModsen.Models;
 using TestWorkForModsen.Repository;
 using Xunit;
@@ -309,6 +310,7 @@ namespace Test_TestWorkForModsen
         [Fact]
         public async Task DeleteByCompositeKeyAsync_RemovesConnectorFromDatabase()
         {
+            ConnectorEventUser connector;
             // Arrange
             using (var context = new DatabaseContext(_options))
             {
@@ -323,7 +325,7 @@ namespace Test_TestWorkForModsen
                     MaxParticipants = "100",
                     Image = new byte[] { 0x01, 0x02, 0x03 } // Пример массива байтов
                 };
-                var connector = new ConnectorEventUser { EventId = 1, UserId = 1, AdditionTime = DateTime.UtcNow, Event = event1, User = user };
+                connector = new ConnectorEventUser { EventId = 1, UserId = 1, AdditionTime = DateTime.UtcNow, Event = event1, User = user };
 
                 context.User.Add(user);
                 context.Event.Add(event1);
@@ -336,7 +338,7 @@ namespace Test_TestWorkForModsen
                 var repository = new ConnectorEventUserRepository(context);
 
                 // Act
-                await repository.DeleteByCompositeKeyAsync(1, 1);
+                await repository.DeleteByCompositeKeyAsync(connector);
 
                 // Assert
                 var result = await context.ConnectorEventUser.FirstOrDefaultAsync(ceu => ceu.EventId == 1 && ceu.UserId == 1);

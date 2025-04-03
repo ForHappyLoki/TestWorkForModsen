@@ -1,7 +1,7 @@
 ﻿using TestWorkForModsen.Models;
 using TestWorkForModsen.Data.Models.DTOs;
 
-namespace TestWorkForModsen.Services
+namespace TestWorkForModsen.Services.Services
 {
     public interface IAuthService
     {

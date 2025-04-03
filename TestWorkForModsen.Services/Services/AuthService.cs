@@ -1,19 +1,13 @@
 ﻿using AutoMapper;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http.Json;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-using TestWorkForModsen.Data;
-using TestWorkForModsen.Models;
-using TestWorkForModsen.Options;
+using TestWorkForModsen.Core.Exceptions;
 using TestWorkForModsen.Data.Models.DTOs;
+using TestWorkForModsen.Models;
 using TestWorkForModsen.Data.Repository;
-using TestWorkForModsen.Data.Repository.BasicInterfaces;
+using TestWorkForModsen.Data.Models;
+using TestWorkForModsen.Services.Validators;
+using TestWorkForModsen.Services.Services;
 
 namespace TestWorkForModsen.Services
 {
@@ -21,9 +15,8 @@ namespace TestWorkForModsen.Services
     {
         private readonly IUserRepository<User> _userRepository;
         private readonly IAccountRepository<Account> _accountRepository;
-        private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IPasswordHasher<Account> _passwordHasher;
-        private readonly JwtSettings _jwtSettings;
+        private readonly ITokenService _tokenService;
         private readonly IMapper _mapper;
         private readonly IValidator<LoginRequestDto> _loginValidator;
         private readonly IValidator<RegisterRequestDto> _registerValidator;
@@ -31,51 +24,52 @@ namespace TestWorkForModsen.Services
         public AuthService(
             IUserRepository<User> userRepository,
             IAccountRepository<Account> accountRepository,
-            IRefreshTokenRepository refreshTokenRepository,
-            IOptions<JwtSettings> jwtSettings,
+            IPasswordHasher<Account> passwordHasher,
+            ITokenService tokenService,
             IMapper mapper,
             IValidator<LoginRequestDto> loginValidator,
-            IValidator<RegisterRequestDto> registerValidator,
-            IPasswordHasher<Account> passwordHasher)
+            IValidator<RegisterRequestDto> registerValidator)
         {
             _userRepository = userRepository;
             _accountRepository = accountRepository;
-            _refreshTokenRepository = refreshTokenRepository;
-            _jwtSettings = jwtSettings.Value;
+            _passwordHasher = passwordHasher;
+            _tokenService = tokenService;
             _mapper = mapper;
             _loginValidator = loginValidator;
             _registerValidator = registerValidator;
-            _passwordHasher = passwordHasher;
         }
 
         public async Task<TokenResponse> LoginAsync(LoginRequestDto request)
         {
             await _loginValidator.ValidateAndThrowAsync(request);
 
-            var account = await _accountRepository.GetByEmailAsync(request.Email)
-                ?? throw new UnauthorizedAccessException("Пользователь не найден");
-
-            if (account.Password != request.Password)
+            var account = await _accountRepository.GetByEmailAsync(request.Email);
+            if (account == null)
             {
-                throw new UnauthorizedAccessException("Неверный пароль");
+                throw new CustomUnauthorizedException("Неверные учетные данные");
             }
 
-            var accessToken = GenerateJwtToken(account);
-            var refreshToken = await GenerateAndSaveRefreshToken(account.Id);
+            var verificationResult = _passwordHasher.VerifyHashedPassword(account, account.Password, request.Password);
+            if (verificationResult != PasswordVerificationResult.Success)
+            {
+                throw new CustomUnauthorizedException("Неверные учетные данные");
+            }
+
+            var accessToken = _tokenService.GenerateJwtToken(account);
+            var refreshToken = await _tokenService.GenerateAndSaveRefreshTokenAsync(account.Id);
 
             return new TokenResponse(accessToken, refreshToken);
         }
 
         public async Task<TokenResponse> RefreshTokenAsync(string refreshToken)
         {
-            var tokenEntity = await _refreshTokenRepository.GetValidTokenAsync(refreshToken)
-                ?? throw new UnauthorizedAccessException("Недействительный или просроченный refresh token");
+            if (string.IsNullOrWhiteSpace(refreshToken))
+            {
+                throw new CustomBadRequestException("Refresh token не может быть пустым");
+            }
 
-            var account = await _accountRepository.GetByIdAsync(tokenEntity.AccountId)
-                ?? throw new UnauthorizedAccessException("Аккаунт не найден");
-
-            var newAccessToken = GenerateJwtToken(account);
-            var newRefreshToken = await UpdateRefreshToken(tokenEntity);
+            var (account, newRefreshToken) = await _tokenService.RefreshTokenPairAsync(refreshToken);
+            var newAccessToken = _tokenService.GenerateJwtToken(account);
 
             return new TokenResponse(newAccessToken, newRefreshToken);
         }
@@ -84,78 +78,34 @@ namespace TestWorkForModsen.Services
         {
             await _registerValidator.ValidateAndThrowAsync(request);
 
-            if (await _accountRepository.GetByEmailAsync(request.Email) == null)
+            if (await _accountRepository.GetByEmailAsync(request.Email) != null)
             {
-                throw new InvalidOperationException("Пользователь с таким email уже существует");
+                throw new CustomConflictException("Пользователь с таким email уже существует");
             }
 
-            var user = _mapper.Map<User>(request);
-            await _userRepository.AddAsync(user);
-
-            var account = new Account
+            try
             {
-                Email = request.Email,
-                Password = _passwordHasher.HashPassword(null, request.Password),
-                Role = "User",
-                UserId = user.Id
-            };
-            await _accountRepository.AddAsync(account);
+                var user = _mapper.Map<User>(request);
+                await _userRepository.AddAsync(user);
 
-            var accessToken = GenerateJwtToken(account);
-            var refreshToken = await GenerateAndSaveRefreshToken(account.Id);
+                var account = new Account
+                {
+                    Email = request.Email,
+                    Password = _passwordHasher.HashPassword(null, request.Password),
+                    Role = "User",
+                    UserId = user.Id
+                };
+                await _accountRepository.AddAsync(account);
 
-            return new TokenResponse(accessToken, refreshToken);
-        }
+                var accessToken = _tokenService.GenerateJwtToken(account);
+                var refreshToken = await _tokenService.GenerateAndSaveRefreshTokenAsync(account.Id);
 
-        private string GenerateJwtToken(Account account)
-        {
-            var claims = new[]
+                return new TokenResponse(accessToken, refreshToken);
+            }
+            catch (Exception ex)
             {
-            new Claim(ClaimTypes.Email, account.Email),
-            new Claim(ClaimTypes.Role, account.Role),
-            new Claim(ClaimTypes.NameIdentifier, account.UserId.ToString())
-        };
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                issuer: _jwtSettings.Issuer,
-                audience: _jwtSettings.Audience,
-                claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(_jwtSettings.ExpiryMinutes),
-                signingCredentials: creds
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
-        private async Task<string> GenerateAndSaveRefreshToken(int accountId)
-        {
-            var refreshToken = GenerateRefreshToken();
-            await _refreshTokenRepository.AddAsync(new RefreshToken
-            {
-                Token = refreshToken,
-                AccountId = accountId,
-                ExpiryTime = DateTime.UtcNow.AddDays(7)
-            });
-            return refreshToken;
-        }
-
-        private async Task<string> UpdateRefreshToken(RefreshToken token)
-        {
-            token.Token = GenerateRefreshToken();
-            token.ExpiryTime = DateTime.UtcNow.AddDays(7);
-            await _refreshTokenRepository.UpdateAsync(token);
-            return token.Token;
-        }
-
-        private static string GenerateRefreshToken()
-        {
-            var randomBytes = new byte[32];
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(randomBytes);
-            return Convert.ToBase64String(randomBytes);
+                throw new CustomDatabaseException("Ошибка при регистрации пользователя", ex);
+            }
         }
     }
 }

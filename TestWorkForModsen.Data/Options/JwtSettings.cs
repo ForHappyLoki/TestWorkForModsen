@@ -1,7 +1,7 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-namespace TestWorkForModsen.Options
+namespace TestWorkForModsen.Data.Options
 {
     public class JwtSettings
     {

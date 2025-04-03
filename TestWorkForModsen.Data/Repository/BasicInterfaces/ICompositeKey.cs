@@ -9,7 +9,7 @@ namespace TestWorkForModsen.Data.Repository.BasicInterfaces
 {
     public interface ICompositeKey<T> where T : class
     {
-        Task DeleteByCompositeKeyAsync(int eventId, int userId, CancellationToken cancellationToken = default);
+        Task DeleteByCompositeKeyAsync(T t, CancellationToken cancellationToken = default);
         Task<T> GetByCompositeKeyAsync(int eventId, int userId);
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace TestWorkForModsen.Models
+﻿namespace TestWorkForModsen.Data.Models
 {
     public class ConnectorEventUser
     {

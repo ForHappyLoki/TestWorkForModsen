@@ -30,4 +30,8 @@
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.6.1" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\TestWorkForModsen.Core\TestWorkForModsen.Core.csproj" />
+	</ItemGroup>
+
 </Project>

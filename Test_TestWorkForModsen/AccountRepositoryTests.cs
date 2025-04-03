@@ -1,10 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TestWorkForModsen.Data;
+using TestWorkForModsen.Data.Data;
+using TestWorkForModsen.Data.Models;
+using TestWorkForModsen.Data.Repository;
 using TestWorkForModsen.Models;
 using TestWorkForModsen.Repository;
 using Xunit;
 
-namespace TestWorkForModsen.Tests
+namespace Test_TestWorkForModsen
 {
     public class AccountRepositoryTests
     {
@@ -168,7 +170,7 @@ namespace TestWorkForModsen.Tests
             await _context.SaveChangesAsync();
 
             // Act
-            await _repository.DeleteAsync(1);
+            await _repository.DeleteAsync(account);
             var result = await _context.Account.FindAsync(1);
 
             // Assert

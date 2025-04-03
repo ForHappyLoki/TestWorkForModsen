@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TestWorkForModsen.Data;
+using TestWorkForModsen.Data.Data;
+using TestWorkForModsen.Data.Models;
 using TestWorkForModsen.Models;
 
 namespace TestWorkForModsen.Repository
@@ -22,7 +24,6 @@ namespace TestWorkForModsen.Repository
                 .ToListAsync();
         }
 
-        // Получить запись по составному ключу (EventId и UserId)
         public async Task<ConnectorEventUser> GetByCompositeKeyAsync(int eventId, int userId)
         {
             return await _context.ConnectorEventUser
@@ -31,7 +32,6 @@ namespace TestWorkForModsen.Repository
                 .FirstOrDefaultAsync(ceu => ceu.EventId == eventId && ceu.UserId == userId);
         }
 
-        // Получить все записи для конкретного пользователя по UserId
         public async Task<IEnumerable<ConnectorEventUser>> GetAllByUserIdAsync(int userId)
         {
             return await _context.ConnectorEventUser
@@ -41,7 +41,6 @@ namespace TestWorkForModsen.Repository
                 .ToListAsync();
         }
 
-        // Получить все записи для конкретного события по EventId
         public async Task<IEnumerable<ConnectorEventUser>> GetAllByEventIdAsync(int eventId)
         {
             return await _context.ConnectorEventUser
@@ -51,26 +50,20 @@ namespace TestWorkForModsen.Repository
                 .ToListAsync();
         }
 
-        // Добавить новую запись
         public async Task AddAsync(ConnectorEventUser entity)
         {
             await _context.ConnectorEventUser.AddAsync(entity);
             await _context.SaveChangesAsync();
         }
 
-        // Обновить запись
         public async Task UpdateAsync(ConnectorEventUser entity, CancellationToken cancellationToken = default)
         {
             _context.Entry(entity).State = EntityState.Modified;
             await _context.SaveChangesAsync(cancellationToken);
         }
 
-        // Удалить запись по составному ключу (EventId и UserId)
-        public async Task DeleteByCompositeKeyAsync(int eventId, int userId, CancellationToken cancellationToken = default)
+        public async Task DeleteByCompositeKeyAsync(ConnectorEventUser entity, CancellationToken cancellationToken = default)
         {
-            var entity = await _context.ConnectorEventUser
-                .FirstOrDefaultAsync(ceu => ceu.EventId == eventId && ceu.UserId == userId);
-
             if (entity != null)
             {
                 _context.ConnectorEventUser.Remove(entity);
@@ -78,7 +71,6 @@ namespace TestWorkForModsen.Repository
             }
         }
 
-        // Получить записи с пагинацией
         public async Task<IEnumerable<ConnectorEventUser>> GetPagedAsync(int pageNumber, int pageSize)
         {
             return await _context.ConnectorEventUser

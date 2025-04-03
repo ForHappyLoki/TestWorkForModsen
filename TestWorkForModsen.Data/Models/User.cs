@@ -1,7 +1,7 @@
-﻿    using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-    namespace TestWorkForModsen.Models
-    {
+namespace TestWorkForModsen.Data.Models
+{
         public class User
         {
             public int Id { get; set; }

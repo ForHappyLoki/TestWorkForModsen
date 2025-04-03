@@ -13,15 +13,16 @@ using TestWorkForModsen.Middleware;
 using TestWorkForModsen.Services;
 using FluentValidation;
 using TestWorkForModsen.Data.Models.DTOs;
-using TestWorkForModsen.Data.Models.Validators;
 using TestWorkForModsen.Services.Services;
-using TestWorkForModsen.Data.Models.Mappings;
 using TestWorkForModsen.Data.Repository;
 using Microsoft.AspNetCore.Identity;
 using TestWorkForModsen.Data;
 using TestWorkForModsen.Models;
-using TestWorkForModsen.Options;
 using System.Security.Cryptography.X509Certificates;
+using TestWorkForModsen.Data.Data;
+using TestWorkForModsen.Data.Models;
+using TestWorkForModsen.Services.Validators;
+using TestWorkForModsen.Data.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,6 +53,8 @@ builder.Services.AddScoped<IConnectorEventUserService, ConnectorEventUserService
 builder.Services.AddScoped<IConnectorEventUserRepository<ConnectorEventUser>, 
     ConnectorEventUserRepository>(); 
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 // Валидаторы
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddScoped<IValidator<AccountDto>, AccountValidator>();
@@ -66,6 +69,7 @@ builder.Services.AddScoped<IValidator<EventDto>, EventValidator>();
 builder.Services.AddScoped<IValidator<LoginRequestDto>, LoginRequestValidator>();
 builder.Services.AddScoped<IValidator<EventCreateDto>, EventCreateDtoValidator>();
 builder.Services.AddValidatorsFromAssembly(typeof(AccountValidator).Assembly);
+builder.Services.AddScoped<IValidator<RefreshToken>, RefreshTokenValidator>();
 // AutoMapper (одна регистрация для всех профилей)
 builder.Services.AddAutoMapper(assemblies: AppDomain.CurrentDomain.GetAssemblies());
 // Специальные сервисы
@@ -97,9 +101,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization(options =>
 {
     // Только для админов
-    options.AddPolicy("AdminOnly", policy => policy.RequireRole("admin"));
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
     // Только для обычных пользователей
-    options.AddPolicy("UserOnly", policy => policy.RequireRole("user"));
+    options.AddPolicy("UserOnly", policy => policy.RequireRole("User"));
     // Для всех авторизованных (админы + пользователи)
     options.AddPolicy("AnyAuthenticated", policy => policy.RequireAuthenticatedUser());
 });
@@ -111,7 +115,7 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
-        builder => builder.WithOrigins("https://localhost:54116")
+        builder => builder.WithOrigins("https://localhost:8081", "http://localhost:8080")
                         .AllowAnyMethod()
                         .AllowAnyHeader()
                         .AllowCredentials());
@@ -154,7 +158,8 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<DatabaseContext>();
-        DbInitializer.Initialize(context); 
+        var passwordHasher = new PasswordHasher<User>();
+        DbInitializer.Initialize(context, passwordHasher); 
     }
     catch (Exception ex)
     {
@@ -171,8 +176,10 @@ app.UseStaticFiles();
 
 app.UseRouting();
 app.UseCors("AllowSpecificOrigin");
+app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapRazorPages();
 
 app.Run();
+//При запуске в VS будет выдаваться ошибка, связанная с тем,
+//что VS выдает собственный сертификат разработчика и игнорирует создаваемый в композиции
